@@ -19,7 +19,7 @@ export function LogButton({ className = "" }: { className?: string }) {
   return (
     <Link
       href="/write"
-      className={`flex items-center justify-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-medium text-paper shadow-[0_4px_14px_rgba(122,58,31,0.25)] ${className}`}
+      className={`flex items-center justify-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-medium text-paper shadow-[0_4px_14px_rgba(122,58,31,0.25)] transition hover:brightness-110 active:scale-[0.98] outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-paper ${className}`}
     >
       <PenLine size={18} />
       Log a moment
@@ -48,7 +48,7 @@ export function TabBar() {
           <Link
             key={href}
             href={href}
-            className={`flex flex-1 flex-col items-center gap-1 text-[11px] ${on ? "font-medium text-accent" : "text-muted"}`}
+            className={`flex flex-1 flex-col items-center gap-1 rounded-lg text-[11px] transition-colors active:bg-surface outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-0 focus-visible:ring-offset-paper ${on ? "font-medium text-accent" : "text-muted hover:text-ink"}`}
           >
             <Icon size={22} />
             {label}
@@ -73,7 +73,7 @@ export function Sidebar() {
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-3 rounded-[10px] px-3 py-2.5 text-sm ${on ? "bg-surface font-medium text-ink" : "text-muted"}`}
+              className={`flex items-center gap-3 rounded-[10px] px-3 py-2.5 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-0 ${on ? "bg-surface font-medium text-ink" : "text-muted hover:bg-surface/60 hover:text-ink"}`}
             >
               <Icon size={20} className={on ? "text-accent" : ""} />
               {label}
