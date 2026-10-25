@@ -1,2 +1,21 @@
 # Personal instructions, never committed
 *.local.md
+
+# dependencies
+/node_modules
+
+# build output
+/.next/
+/out/
+*.tsbuildinfo
+next-env.d.ts
+
+# tests
+/coverage
+
+# env files
+.env*
+
+# misc
+.DS_Store
+npm-debug.log*
