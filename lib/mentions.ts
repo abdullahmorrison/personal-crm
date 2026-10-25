@@ -35,6 +35,11 @@ export function syncWith(chosen: number[], linked: number[], mentioned: number[]
   return [...chosen.filter((id) => !gone.includes(id)), ...back];
 }
 
+/** `linked` after "with" is changed by hand: anyone added or removed there is no longer tied to a mention. */
+export function linkedAfterHandEdit(linked: number[], before: number[], after: number[]) {
+  return linked.filter((id) => before.includes(id) && after.includes(id));
+}
+
 export function mentionToken(id: number, label: string) {
   return `@[${label.replace(/[\]\n]/g, "")}](person:${id})`;
 }

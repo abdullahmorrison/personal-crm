@@ -7,7 +7,7 @@ import type { MomentFormState } from "@/app/(app)/journal/actions";
 import { DatePicker } from "@/components/date-picker";
 import { MomentEditor } from "@/components/moment-editor";
 import { localToday, longDate } from "@/lib/dates";
-import { mentionedIds, syncWith } from "@/lib/mentions";
+import { linkedAfterHandEdit, mentionedIds, syncWith } from "@/lib/mentions";
 import { personColor } from "@/lib/person-colors";
 
 type Person = { id: number; name: string; color: number };
@@ -50,7 +50,7 @@ export function MomentForm({ action, people: initialPeople, defaults, closeHref 
       <DateHeading date={date} today={today} onChange={setPicked} />
       <input type="hidden" name="date" value={date} />
 
-      <WithPeople people={people} chosen={chosen} onChange={(ids) => setWith((w) => ({ chosen: ids, linked: w.linked.filter((id) => ids.includes(id)) }))} />
+      <WithPeople people={people} chosen={chosen} onChange={(ids) => setWith((w) => ({ chosen: ids, linked: linkedAfterHandEdit(w.linked, w.chosen, ids) }))} />
       {chosen.map((id) => (
         <input key={id} type="hidden" name="personIds" value={id} />
       ))}

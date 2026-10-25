@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fromDoc, mentionedIds, mentionToken, parseBody, syncWith, toDoc } from "./mentions";
+import { fromDoc, linkedAfterHandEdit, mentionedIds, mentionToken, parseBody, syncWith, toDoc } from "./mentions";
 
 describe("parseBody", () => {
   it("splits text and mentions in order", () => {
@@ -65,5 +65,22 @@ describe("syncWith", () => {
 
   it("brings them back when the mention returns", () => {
     expect(syncWith([1], [2], [2])).toEqual([1, 2]);
+  });
+});
+
+describe("linkedAfterHandEdit", () => {
+  it("unlinks someone added back by hand after their mention was deleted", () => {
+    // Sam (2) was mentioned, then the mention deleted: out of "with" but still linked, for undo.
+    const linked = linkedAfterHandEdit([2], [1], [1, 2]);
+    expect(linked).toEqual([]);
+    expect(syncWith([1, 2], linked, [])).toEqual([1, 2]);
+  });
+
+  it("unlinks someone removed by hand", () => {
+    expect(linkedAfterHandEdit([2], [1, 2], [1])).toEqual([]);
+  });
+
+  it("keeps links for everyone else", () => {
+    expect(linkedAfterHandEdit([2], [2], [2, 3])).toEqual([2]);
   });
 });
