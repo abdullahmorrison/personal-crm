@@ -91,14 +91,23 @@ export function PeopleTiers({ people }: { people: LayoutPerson[] }) {
         </Link>
       </header>
 
-      {people.length === 0 && (
-        <div className="absolute inset-x-0 top-1/3 px-10 text-center">
-          <p className="font-serif text-xl">No one here yet.</p>
-          <Link href="/people/new" className="mt-2 inline-block text-sm font-medium text-accent">
-            Add your first person
-          </Link>
-        </div>
-      )}
+      {people.length === 0 && layout && <EmptyPrompt bands={layout.bands} />}
+    </div>
+  );
+}
+
+/** Centred inside a middle band, clear of the tier labels and arc edges. */
+function EmptyPrompt({ bands }: { bands: { labelY: number }[] }) {
+  const i = Math.floor(bands.length / 2);
+  const top = bands[i].labelY + 22;
+  const bottom = bands[i - 1].labelY - 12;
+  return (
+    <div style={{ top, height: bottom - top }} className="absolute inset-x-0 flex flex-col items-center justify-center gap-1.5 px-8 text-center">
+      <p className="font-serif text-[22px]">No one here yet.</p>
+      <p className="text-[13px] text-muted">Add the people in your life, closest at the bottom.</p>
+      <Link href="/people/new" className="mt-1 text-[13px] font-medium text-accent">
+        Add your first person
+      </Link>
     </div>
   );
 }
