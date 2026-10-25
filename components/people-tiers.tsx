@@ -9,12 +9,14 @@ import { personColor } from "@/lib/person-colors";
 import { layoutTiers, type LayoutPerson } from "@/lib/tier-layout";
 import { TIERS } from "@/lib/tiers";
 
-// When the side panel opens the arcs get narrower; everything glides to its new place.
-const GLIDE = "motion-safe:transition-[left,top,width,height] motion-safe:duration-300 motion-safe:ease-out";
+// When the side panel opens the arcs get narrower and everything glides to its new place.
+// Only transforms animate: the browser can move them without redoing layout, so it stays smooth.
+const GLIDE = "will-change-transform motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out";
+const at = (x: number, y: number) => `translate3d(${x}px, ${y}px, 0)`;
 // Bubbles pop in one after another, capped so a bubble that appears later (say, an overflow
 // bubble when the panel narrows the arcs) never waits long to show.
 const stagger = (i: number) => Math.min(i * 25, 250);
-const BAND_FILLS = ["bg-band-1", "bg-band-2", "bg-band-3", "bg-band-4"];
+const BAND_FILLS = ["fill-band-1", "fill-band-2", "fill-band-3", "fill-band-4"];
 const DESK_QUERY = "(min-width: 1024px)"; // matches the `desk` breakpoint in globals.css
 
 function useIsDesk() {
@@ -55,17 +57,17 @@ export function PeopleTiers({ people }: { people: LayoutPerson[] }) {
               cx={layout.center.x}
               cy={layout.center.y}
               r={band.outerRadius}
-              className={`${BAND_FILLS[Math.min(layout.bands.length - 1 - i, BAND_FILLS.length - 1)]} border border-line`}
+              className={`${BAND_FILLS[Math.min(layout.bands.length - 1 - i, BAND_FILLS.length - 1)]} stroke-line`}
             />
           ))}
           {/* The closest tier also fills everything below its arc. */}
-          <Circle cx={layout.center.x} cy={layout.center.y} r={layout.innerRadius} className="bg-band-1" />
+          <Circle cx={layout.center.x} cy={layout.center.y} r={layout.innerRadius} className="fill-band-1" />
 
           {layout.bands.map((band) => (
             <p
               key={band.tier}
-              style={{ top: band.labelY }}
-              className={`absolute inset-x-0 text-center text-[10px] font-medium tracking-[0.14em] text-muted uppercase ${GLIDE}`}
+              style={{ transform: at(0, band.labelY) }}
+              className={`absolute inset-x-0 top-0 text-center text-[10px] font-medium tracking-[0.14em] text-muted uppercase ${GLIDE}`}
             >
               {band.label} · {band.count}
             </p>
@@ -77,16 +79,18 @@ export function PeopleTiers({ people }: { people: LayoutPerson[] }) {
             ) : (
               <div
                 key={`more-${b.tier}`}
-                style={{ left: b.x - b.size / 2, top: b.y - b.size / 2, width: b.size, animationDelay: `${stagger(i)}ms` }}
-                className={`absolute flex flex-col items-center gap-1.5 ${GLIDE} motion-safe:animate-pop-in`}
+                style={{ transform: at(b.x - b.size / 2, b.y - b.size / 2), width: b.size }}
+                className={`absolute top-0 left-0 ${GLIDE}`}
               >
-                <span
-                  style={{ width: b.size, height: b.size }}
-                  className="flex items-center justify-center rounded-full border border-dashed border-muted text-sm font-medium"
-                >
-                  +{b.hidden}
-                </span>
-                <span className="text-[11px] text-muted">more</span>
+                <div style={{ animationDelay: `${stagger(i)}ms` }} className="flex flex-col items-center gap-1.5 motion-safe:animate-pop-in">
+                  <span
+                    style={{ width: b.size, height: b.size }}
+                    className="flex items-center justify-center rounded-full border border-dashed border-muted text-sm font-medium"
+                  >
+                    +{b.hidden}
+                  </span>
+                  <span className="text-[11px] text-muted">more</span>
+                </div>
               </div>
             ),
           )}
@@ -131,8 +135,22 @@ function EmptyPrompt({ bands }: { bands: { labelY: number }[] }) {
   );
 }
 
+// Circles are drawn once at this radius and scaled into place, so resizing them is a transform.
+// The stroke doesn't scale, so the edge line stays 1px at any size.
+const UNIT = 1000;
+
 function Circle({ cx, cy, r, className }: { cx: number; cy: number; r: number; className: string }) {
-  return <div style={{ left: cx - r, top: cy - r, width: r * 2, height: r * 2 }} className={`absolute rounded-full ${GLIDE} ${className}`} />;
+  return (
+    <svg
+      width={UNIT * 2}
+      height={UNIT * 2}
+      aria-hidden
+      style={{ transform: `${at(cx - UNIT, cy - UNIT)} scale(${r / UNIT})` }}
+      className={`absolute top-0 left-0 overflow-visible ${GLIDE}`}
+    >
+      <circle cx={UNIT} cy={UNIT} r={UNIT} className={className} vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
 }
 
 type BubbleProps = { person: LayoutPerson; x: number; y: number; size: number; delay: number; selected: boolean };
@@ -142,18 +160,21 @@ function PersonBubble({ person, x, y, size, delay, selected }: BubbleProps) {
   return (
     <Link
       href={`/people/${person.id}`}
-      style={{ left: x - size / 2 - 20, top: y - size / 2, width: size + 40, animationDelay: `${delay}ms` }}
-      className={`group absolute flex flex-col items-center gap-1.5 rounded-lg outline-none ${GLIDE} motion-safe:animate-pop-in`}
+      style={{ transform: at(x - size / 2 - 20, y - size / 2), width: size + 40 }}
+      className={`group absolute top-0 left-0 rounded-lg outline-none ${GLIDE}`}
     >
-      <span
-        style={{ width: size, height: size, fontSize: Math.round(size * 0.34) }}
-        className={`flex items-center justify-center rounded-full font-serif shadow-[0_2px_6px_rgba(90,74,58,0.10)] ${selected ? "ring-[2.5px] ring-accent" : "ring-2 ring-white/90"} transition group-hover:shadow-[0_6px_14px_rgba(90,74,58,0.18)] group-focus-visible:ring-ink group-active:scale-95 motion-safe:group-hover:-translate-y-0.5 ${color.fill} ${color.ink}`}
-      >
-        {initials(person.name)}
-      </span>
-      <span className={`max-w-full truncate text-xs ${selected ? "font-medium" : person.closeness === TIERS[TIERS.length - 1].value ? "text-muted" : ""}`}>
-        {firstName(person.name)}
-      </span>
+      {/* The entrance animation lives on an inner element so it doesn't fight the glide. */}
+      <div style={{ animationDelay: `${delay}ms` }} className="flex flex-col items-center gap-1.5 motion-safe:animate-pop-in">
+        <span
+          style={{ width: size, height: size, fontSize: Math.round(size * 0.34) }}
+          className={`flex items-center justify-center rounded-full font-serif shadow-[0_2px_6px_rgba(90,74,58,0.10)] ${selected ? "ring-[2.5px] ring-accent" : "ring-2 ring-white/90"} transition group-hover:shadow-[0_6px_14px_rgba(90,74,58,0.18)] group-focus-visible:ring-ink group-active:scale-95 motion-safe:group-hover:-translate-y-0.5 ${color.fill} ${color.ink}`}
+        >
+          {initials(person.name)}
+        </span>
+        <span className={`max-w-full truncate text-xs ${selected ? "font-medium" : person.closeness === TIERS[TIERS.length - 1].value ? "text-muted" : ""}`}>
+          {firstName(person.name)}
+        </span>
+      </div>
     </Link>
   );
 }
