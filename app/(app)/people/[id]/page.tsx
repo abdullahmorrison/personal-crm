@@ -2,15 +2,21 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { BackLink } from "@/components/back-link";
 import { Panel } from "@/components/panel";
+import { MomentItem } from "@/components/moment-item";
 import { SectionLabel } from "@/components/section-label";
+import { getDb } from "@/lib/db";
+import { listMoments } from "@/lib/moments";
 import { firstName, initials } from "@/lib/names";
 import { personColor } from "@/lib/person-colors";
 import { tierLabel } from "@/lib/tiers";
 import { personFromParams } from "./data";
 
+const LATEST = 3; // moments shown on the profile before "All N moments"
+
 async function Profile({ params }: { params: Promise<{ id: string }> }) {
   const person = await personFromParams(params);
   const color = personColor(person.color);
+  const moments = listMoments(getDb(), { personId: person.id });
   return (
     <Panel close={{ href: "/people", label: "Close" }}>
       <div className="flex items-center justify-between desk:-ml-3">
@@ -44,8 +50,25 @@ async function Profile({ params }: { params: Promise<{ id: string }> }) {
       </section>
 
       <section className="mt-10 flex flex-col gap-2.5">
-        <SectionLabel>Journal</SectionLabel>
-        <p className="font-serif text-[17px] text-muted/70">No moments yet.</p>
+        <div className="flex items-baseline justify-between">
+          <SectionLabel>Journal</SectionLabel>
+          {moments.length > LATEST && (
+            <Link href={`/people/${person.id}/moments`} className="text-xs text-accent underline-offset-4 hover:underline">
+              All {moments.length} moments
+            </Link>
+          )}
+        </div>
+        {moments.length ? (
+          <div className="flex flex-col gap-1">
+            {moments.slice(0, LATEST).map((m) => (
+              <MomentItem key={m.id} moment={m} about={person.id} href={`/people/${person.id}/moments/${m.id}`} />
+            ))}
+          </div>
+        ) : (
+          <Link href="/write" className="font-serif text-[17px] text-muted/70 hover:text-muted">
+            No moments with {firstName(person.name)} yet. Write one…
+          </Link>
+        )}
       </section>
     </Panel>
   );

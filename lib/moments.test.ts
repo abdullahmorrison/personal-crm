@@ -82,6 +82,17 @@ describe("listMoments", () => {
     deletePerson(db, sam.id);
     expect(listMoments(db).every((m) => m.people.length === 0)).toBe(true);
   });
+
+  it("narrows to one person's moments, still listing everyone in them", () => {
+    const { db, sam, priya } = setup();
+    createMoment(db, { body: "Both", date: "2026-10-20", personIds: [sam.id, priya.id] });
+    createMoment(db, { body: "Just Priya", date: "2026-10-21", personIds: [priya.id] });
+    createMoment(db, { body: "Solo", date: "2026-10-22", personIds: [] });
+    const sams = listMoments(db, { personId: sam.id });
+    expect(sams.map((m) => m.body)).toEqual(["Both"]);
+    expect(sams[0].people.map((p) => p.id)).toEqual([priya.id, sam.id]);
+    expect(listMoments(db, { personId: priya.id }).map((m) => m.body)).toEqual(["Just Priya", "Both"]);
+  });
 });
 
 describe("groupByMonth", () => {
