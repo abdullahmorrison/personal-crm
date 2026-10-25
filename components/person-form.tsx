@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import type { PersonFormState } from "@/app/(app)/people/actions";
+import { SectionLabel } from "@/components/section-label";
 import { NEW_PERSON_CLOSENESS, TIERS } from "@/lib/tiers";
 
 type Props = {
@@ -25,7 +26,9 @@ export function PersonForm({ action, submitLabel, defaults }: Props) {
       />
 
       <fieldset className="flex flex-col gap-3">
-        <legend className="mb-3 text-[11px] font-medium tracking-[0.12em] text-muted uppercase">How close</legend>
+        <SectionLabel as="legend" className="mb-3">
+          How close
+        </SectionLabel>
         <div className="flex flex-wrap gap-2">
           {TIERS.map((t) => (
             <label key={t.value} className="cursor-pointer">
@@ -45,7 +48,7 @@ export function PersonForm({ action, submitLabel, defaults }: Props) {
       </fieldset>
 
       <label className="flex flex-col gap-3">
-        <span className="text-[11px] font-medium tracking-[0.12em] text-muted uppercase">Notes</span>
+        <SectionLabel as="span">Notes</SectionLabel>
         <textarea
           name="notes"
           rows={4}

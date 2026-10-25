@@ -1,12 +1,11 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { BackLink } from "@/components/back-link";
-import { initials } from "@/lib/names";
+import { SectionLabel } from "@/components/section-label";
+import { firstName, initials } from "@/lib/names";
 import { personColor } from "@/lib/person-colors";
 import { tierLabel } from "@/lib/tiers";
 import { personFromParams } from "./data";
-
-const label = "text-[11px] font-medium tracking-[0.12em] text-muted uppercase";
 
 async function Profile({ params }: { params: Promise<{ id: string }> }) {
   const person = await personFromParams(params);
@@ -31,18 +30,18 @@ async function Profile({ params }: { params: Promise<{ id: string }> }) {
       </div>
 
       <section className="mt-10 flex flex-col gap-2.5">
-        <h2 className={label}>Notes</h2>
+        <SectionLabel>Notes</SectionLabel>
         {person.notes ? (
           <p className="font-serif text-[17px] leading-[27px] whitespace-pre-line">{person.notes}</p>
         ) : (
           <Link href={`/people/${person.id}/edit`} className="font-serif text-[17px] text-muted/70 hover:text-muted">
-            Add notes about {person.name.split(" ")[0]}…
+            Add notes about {firstName(person.name)}…
           </Link>
         )}
       </section>
 
       <section className="mt-10 flex flex-col gap-2.5">
-        <h2 className={label}>Journal</h2>
+        <SectionLabel>Journal</SectionLabel>
         <p className="font-serif text-[17px] text-muted/70">No moments yet.</p>
       </section>
     </div>

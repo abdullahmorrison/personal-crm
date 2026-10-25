@@ -74,7 +74,7 @@ function TabBarLinks({ path }: { path: Path }) {
           <Link
             key={href}
             href={href}
-            className={`flex flex-1 flex-col items-center gap-1 rounded-lg text-[11px] transition-colors active:bg-surface outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-0 focus-visible:ring-offset-paper ${on ? "font-medium text-accent" : "text-muted hover:text-ink"}`}
+            className={`flex flex-1 flex-col items-center gap-1 rounded-lg text-[11px] transition-colors active:bg-surface outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-0 ${on ? "font-medium text-accent" : "text-muted hover:text-ink"}`}
           >
             <Icon size={22} />
             {label}
