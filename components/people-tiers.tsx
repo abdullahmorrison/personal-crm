@@ -9,9 +9,8 @@ import { personColor } from "@/lib/person-colors";
 import { layoutTiers, type LayoutPerson } from "@/lib/tier-layout";
 import { TIERS } from "@/lib/tiers";
 
-// When the side panel opens the arcs get narrower and everything glides to its new place.
-// Only transforms animate: the browser can move them without redoing layout, so it stays smooth.
-const GLIDE = "will-change-transform motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out";
+// Everything is placed with transforms, which the browser can move without redoing layout.
+// When the side panel opens or closes, the arcs snap to their new size with no animation.
 const at = (x: number, y: number) => `translate3d(${x}px, ${y}px, 0)`;
 // Bubbles pop in one after another, capped so a bubble that appears later (say, an overflow
 // bubble when the panel narrows the arcs) never waits long to show.
@@ -72,7 +71,7 @@ export function PeopleTiers({ people }: { people: LayoutPerson[] }) {
             <p
               key={band.tier}
               style={{ transform: `${at(layout.center.x, band.labelY)} translateX(-50%)` }}
-              className={`absolute top-0 left-0 whitespace-nowrap text-[10px] font-medium tracking-[0.14em] text-muted uppercase ${GLIDE}`}
+              className={`absolute top-0 left-0 whitespace-nowrap text-[10px] font-medium tracking-[0.14em] text-muted uppercase`}
             >
               {band.label} · {band.count}
             </p>
@@ -85,7 +84,7 @@ export function PeopleTiers({ people }: { people: LayoutPerson[] }) {
               <div
                 key={`more-${b.tier}`}
                 style={{ transform: at(b.x - b.size / 2, b.y - b.size / 2), width: b.size }}
-                className={`absolute top-0 left-0 ${GLIDE}`}
+                className={`absolute top-0 left-0`}
               >
                 <div style={{ animationDelay: `${stagger(i)}ms` }} className="flex flex-col items-center gap-1.5 motion-safe:animate-pop-in">
                   <span
@@ -151,7 +150,7 @@ function Circle({ cx, cy, r, className }: { cx: number; cy: number; r: number; c
       height={UNIT * 2}
       aria-hidden
       style={{ transform: `${at(cx - UNIT, cy - UNIT)} scale(${r / UNIT})` }}
-      className={`absolute top-0 left-0 overflow-visible ${GLIDE}`}
+      className={`absolute top-0 left-0 overflow-visible`}
     >
       <circle cx={UNIT} cy={UNIT} r={UNIT} className={className} vectorEffect="non-scaling-stroke" />
     </svg>
@@ -166,7 +165,7 @@ function PersonBubble({ person, x, y, size, delay, selected }: BubbleProps) {
     <Link
       href={`/people/${person.id}`}
       style={{ transform: at(x - size / 2 - 20, y - size / 2), width: size + 40 }}
-      className={`group absolute top-0 left-0 rounded-lg outline-none ${GLIDE}`}
+      className={`group absolute top-0 left-0 rounded-lg outline-none`}
     >
       {/* The entrance animation lives on an inner element so it doesn't fight the glide. */}
       <div style={{ animationDelay: `${delay}ms` }} className="flex flex-col items-center gap-1.5 motion-safe:animate-pop-in">
