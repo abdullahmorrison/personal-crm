@@ -3,10 +3,12 @@
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useOptimistic, useRef, useState, useSyncExternalStore, useTransition } from "react";
+import { movePerson } from "@/app/(app)/people/actions";
+import { usePressDrag } from "@/components/use-press-drag";
 import { firstName, initials } from "@/lib/names";
 import { personColor } from "@/lib/person-colors";
-import { layoutTiers, type LayoutPerson } from "@/lib/tier-layout";
+import { layoutTiers, tierAt, type LayoutPerson } from "@/lib/tier-layout";
 import { TIERS } from "@/lib/tiers";
 
 // Everything is placed with transforms, which the browser can move without redoing layout.
@@ -30,8 +32,17 @@ function useIsDesk() {
   );
 }
 
-export function PeopleTiers({ people }: { people: LayoutPerson[] }) {
+type Drag = { person: LayoutPerson; size: number; x: number; y: number; tier?: number };
+
+export function PeopleTiers({ people: saved }: { people: LayoutPerson[] }) {
   const ref = useRef<HTMLDivElement>(null);
+  // A dropped person moves right away; the save runs in the background and undoes itself on error.
+  const [people, moveLocally] = useOptimistic(saved, (state, m: { id: number; closeness: number }) =>
+    state.map((p) => (p.id === m.id ? { ...p, closeness: m.closeness } : p)),
+  );
+  const [, startTransition] = useTransition();
+  const [drag, setDrag] = useState<Drag | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
 
   useEffect(() => {
@@ -51,6 +62,26 @@ export function PeopleTiers({ people }: { people: LayoutPerson[] }) {
   const selectedId = Number(usePathname().match(/^\/people\/(\d+)/)?.[1]);
   const layout = size && layoutTiers(people, { ...size, tiers: TIERS, top: desk ? 110 : 96, bottom: desk ? 40 : 150 });
 
+  const local = (p: { clientX: number; clientY: number }) => {
+    const box = ref.current!.getBoundingClientRect();
+    return { x: p.clientX - box.left, y: p.clientY - box.top };
+  };
+  const dragTo = (person: LayoutPerson, size: number, p: { clientX: number; clientY: number }) => {
+    const point = local(p);
+    setDrag({ person, size, ...point, tier: layout ? tierAt(layout, point) : undefined });
+  };
+  const drop = (person: LayoutPerson, p: { clientX: number; clientY: number }) => {
+    const tier = layout ? tierAt(layout, local(p)) : undefined;
+    setDrag(null);
+    if (!tier || tier === person.closeness) return;
+    setError(null);
+    startTransition(async () => {
+      moveLocally({ id: person.id, closeness: tier });
+      const result = await movePerson(person.id, tier);
+      if (result.error) setError(result.error);
+    });
+  };
+
   return (
     <div ref={ref} className="relative -mb-28 h-dvh overflow-hidden desk:mb-0">
       {layout && (
@@ -61,17 +92,24 @@ export function PeopleTiers({ people }: { people: LayoutPerson[] }) {
               cx={layout.center.x}
               cy={layout.center.y}
               r={band.outerRadius}
-              className={`${BAND_FILLS[Math.min(layout.bands.length - 1 - i, BAND_FILLS.length - 1)]} stroke-line`}
+              className={
+                drag?.tier === band.tier ? "fill-accent/10 stroke-accent" : `${BAND_FILLS[Math.min(layout.bands.length - 1 - i, BAND_FILLS.length - 1)]} stroke-line`
+              }
             />
           ))}
           {/* The closest tier also fills everything below its arc. */}
-          <Circle cx={layout.center.x} cy={layout.center.y} r={layout.innerRadius} className="fill-band-1" />
+          <Circle
+            cx={layout.center.x}
+            cy={layout.center.y}
+            r={layout.innerRadius}
+            className={drag?.tier === layout.bands[0]?.tier ? "fill-accent/10" : "fill-band-1"}
+          />
 
           {layout.bands.map((band) => (
             <p
               key={band.tier}
               style={{ transform: `${at(layout.center.x, band.labelY)} translateX(-50%)` }}
-              className={`absolute top-0 left-0 whitespace-nowrap text-[10px] font-medium tracking-[0.14em] text-muted uppercase`}
+              className={`absolute top-0 left-0 whitespace-nowrap text-[10px] font-medium tracking-[0.14em] uppercase ${drag?.tier === band.tier ? "text-accent" : "text-muted"}`}
             >
               {band.label} · {band.count}
             </p>
@@ -79,7 +117,19 @@ export function PeopleTiers({ people }: { people: LayoutPerson[] }) {
 
           {layout.bubbles.map((b, i) =>
             b.kind === "person" ? (
-              <PersonBubble key={b.person.id} person={b.person} x={b.x} y={b.y} size={b.size} delay={stagger(i)} selected={b.person.id === selectedId} />
+              <PersonBubble
+                key={b.person.id}
+                person={b.person}
+                x={b.x}
+                y={b.y}
+                size={b.size}
+                delay={stagger(i)}
+                selected={b.person.id === selectedId}
+                lifted={drag?.person.id === b.person.id}
+                onDrag={(p) => dragTo(b.person, b.size, p)}
+                onDrop={(p) => drop(b.person, p)}
+                onCancel={() => setDrag(null)}
+              />
             ) : (
               <div
                 key={`more-${b.tier}`}
@@ -99,6 +149,24 @@ export function PeopleTiers({ people }: { people: LayoutPerson[] }) {
             ),
           )}
         </>
+      )}
+
+      {drag && (
+        <span
+          style={{ transform: `${at(drag.x - drag.size / 2, drag.y - drag.size / 2)} scale(1.12)`, width: drag.size, height: drag.size, fontSize: Math.round(drag.size * 0.34) }}
+          className={`pointer-events-none absolute top-0 left-0 z-10 flex items-center justify-center rounded-full font-serif shadow-[0_10px_24px_rgba(90,74,58,0.25)] ring-2 ring-white ${personColor(drag.person.color).fill} ${personColor(drag.person.color).ink}`}
+        >
+          {initials(drag.person.name)}
+        </span>
+      )}
+
+      {error && (
+        <p
+          role="alert"
+          className="absolute inset-x-0 bottom-40 mx-auto w-fit rounded-full bg-ink px-4 py-2 text-[13px] text-paper shadow-lg desk:bottom-10"
+        >
+          {error}
+        </p>
       )}
 
       <header className="absolute inset-x-0 top-0 flex items-center justify-between px-7 pt-12 desk:px-10 desk:pt-8">
@@ -157,15 +225,29 @@ function Circle({ cx, cy, r, className }: { cx: number; cy: number; r: number; c
   );
 }
 
-type BubbleProps = { person: LayoutPerson; x: number; y: number; size: number; delay: number; selected: boolean };
+type Pointer = { clientX: number; clientY: number };
+type BubbleProps = {
+  person: LayoutPerson;
+  x: number;
+  y: number;
+  size: number;
+  delay: number;
+  selected: boolean;
+  lifted: boolean;
+  onDrag: (p: Pointer) => void;
+  onDrop: (p: Pointer) => void;
+  onCancel: () => void;
+};
 
-function PersonBubble({ person, x, y, size, delay, selected }: BubbleProps) {
+function PersonBubble({ person, x, y, size, delay, selected, lifted, onDrag, onDrop, onCancel }: BubbleProps) {
   const color = personColor(person.color);
+  const drag = usePressDrag({ onStart: onDrag, onMove: onDrag, onDrop, onCancel });
   return (
     <Link
       href={`/people/${person.id}`}
+      {...drag}
       style={{ transform: at(x - size / 2 - 20, y - size / 2), width: size + 40 }}
-      className={`group absolute top-0 left-0 rounded-lg outline-none`}
+      className={`group absolute top-0 left-0 touch-none rounded-lg outline-none select-none [-webkit-touch-callout:none] ${lifted ? "opacity-30" : ""}`}
     >
       {/* The entrance animation lives on an inner element so it doesn't fight the glide. */}
       <div style={{ animationDelay: `${delay}ms` }} className="flex flex-col items-center gap-1.5 motion-safe:animate-pop-in">
