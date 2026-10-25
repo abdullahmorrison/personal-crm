@@ -39,6 +39,14 @@ export function updatePerson(db: Db, id: number, input: PersonInput) {
   return updated;
 }
 
+/** Moves a person to another closeness tier, keeping everything else. */
+export function moveToTier(db: Db, id: number, closeness: number) {
+  if (!TIERS.some((t) => t.value === closeness)) throw new Error(`Unknown closeness: ${closeness}`);
+  const moved = db.update(people).set({ closeness }).where(eq(people.id, id)).returning().get();
+  if (!moved) throw new Error("This person no longer exists.");
+  return moved;
+}
+
 /** Removes the person. Moments stay; they just no longer list this person. */
 export function deletePerson(db: Db, id: number) {
   db.delete(people).where(eq(people.id, id)).run();

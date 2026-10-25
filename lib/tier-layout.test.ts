@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { layoutTiers, type LayoutPerson } from "./tier-layout";
+import { layoutTiers, tierAt, type LayoutPerson } from "./tier-layout";
 import { TIERS } from "./tiers";
 
 const phone = { width: 402, height: 800, top: 100, bottom: 140, tiers: TIERS };
@@ -51,5 +51,22 @@ describe("layoutTiers", () => {
   it("centres a lone person", () => {
     const [b] = layoutTiers(people(1, 2), phone).bubbles;
     expect(b.x).toBe(phone.width / 2);
+  });
+});
+
+describe("tierAt", () => {
+  const layout = layoutTiers([], phone);
+  const below = (tierIndex: number) => ({ x: phone.width / 2, y: layout.bands[tierIndex].labelY + 30 });
+
+  it("finds the tier whose band contains the point", () => {
+    expect(TIERS.map((_, i) => tierAt(layout, below(i)))).toEqual(TIERS.map((t) => t.value));
+  });
+
+  it("treats anything below the closest arc as the closest tier", () => {
+    expect(tierAt(layout, { x: phone.width / 2, y: phone.height })).toBe(TIERS[0].value);
+  });
+
+  it("treats anything past the farthest arc as the farthest tier", () => {
+    expect(tierAt(layout, { x: phone.width / 2, y: 0 })).toBe(TIERS.at(-1)!.value);
   });
 });

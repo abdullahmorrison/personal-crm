@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { openDb } from "./db";
 import { entries, entryPeople } from "@/db/schema";
-import { createPerson, deletePerson, getPerson, updatePerson } from "./people";
+import { createPerson, deletePerson, getPerson, moveToTier, updatePerson } from "./people";
 import { NEW_PERSON_CLOSENESS } from "./tiers";
 
 describe("createPerson", () => {
@@ -63,5 +63,20 @@ describe("deletePerson", () => {
     expect(getPerson(db, sam.id)).toBeUndefined();
     expect(db.select().from(entries).all()).toHaveLength(1);
     expect(db.select().from(entryPeople).all()).toHaveLength(0);
+  });
+});
+
+describe("moveToTier", () => {
+  it("changes only the closeness", () => {
+    const db = openDb(":memory:");
+    const sam = createPerson(db, { name: "Sam", notes: "Soccer" });
+    expect(moveToTier(db, sam.id, 1)).toMatchObject({ name: "Sam", notes: "Soccer", color: sam.color, closeness: 1 });
+  });
+
+  it("rejects unknown tiers and missing people", () => {
+    const db = openDb(":memory:");
+    const sam = createPerson(db, { name: "Sam" });
+    expect(() => moveToTier(db, sam.id, 0)).toThrow("Unknown closeness");
+    expect(() => moveToTier(db, 999, 1)).toThrow("no longer exists");
   });
 });

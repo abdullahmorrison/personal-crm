@@ -69,3 +69,13 @@ export function layoutTiers(people: LayoutPerson[], { width, height, top, bottom
 
   return { center, innerRadius, bands, bubbles };
 }
+
+/**
+ * Which tier a point (in the same coordinates as the layout) falls in, by its distance from the
+ * arcs' center. Below the closest arc counts as the closest tier; past the farthest, the farthest.
+ */
+export function tierAt(layout: Pick<TierLayout, "center" | "bands">, point: { x: number; y: number }) {
+  const distance = Math.hypot(point.x - layout.center.x, point.y - layout.center.y);
+  const band = layout.bands.find((b) => distance <= b.outerRadius) ?? layout.bands.at(-1);
+  return band?.tier;
+}

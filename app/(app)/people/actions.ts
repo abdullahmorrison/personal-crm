@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getDb } from "@/lib/db";
-import { createPerson, deletePerson, updatePerson } from "@/lib/people";
+import { createPerson, deletePerson, moveToTier, updatePerson } from "@/lib/people";
 
 export type PersonFormState = { error?: string };
 
@@ -47,4 +47,15 @@ export async function editPerson(id: number, _prev: PersonFormState, form: FormD
 export async function removePerson(id: number) {
   deletePerson(getDb(), id);
   done("/people");
+}
+
+/** Drag-and-drop between tiers. Returns an error instead of redirecting, so the arcs can snap back. */
+export async function movePerson(id: number, closeness: number): Promise<PersonFormState> {
+  try {
+    moveToTier(getDb(), id, closeness);
+  } catch (e) {
+    return { error: message(e) };
+  }
+  revalidatePath("/people", "layout");
+  return {};
 }
