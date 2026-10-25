@@ -2,12 +2,18 @@
 
 import { Plus } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { firstName, initials } from "@/lib/names";
 import { personColor } from "@/lib/person-colors";
 import { layoutTiers, type LayoutPerson } from "@/lib/tier-layout";
 import { TIERS } from "@/lib/tiers";
 
+// When the side panel opens the arcs get narrower; everything glides to its new place.
+const GLIDE = "motion-safe:transition-[left,top,width,height] motion-safe:duration-300 motion-safe:ease-out";
+// Bubbles pop in one after another, capped so a bubble that appears later (say, an overflow
+// bubble when the panel narrows the arcs) never waits long to show.
+const stagger = (i: number) => Math.min(i * 25, 250);
 const BAND_FILLS = ["bg-band-1", "bg-band-2", "bg-band-3", "bg-band-4"];
 const DESK_QUERY = "(min-width: 1024px)"; // matches the `desk` breakpoint in globals.css
 
@@ -36,6 +42,7 @@ export function PeopleTiers({ people }: { people: LayoutPerson[] }) {
   }, []);
 
   const desk = useIsDesk();
+  const selectedId = Number(usePathname().match(/^\/people\/(\d+)/)?.[1]);
   const layout = size && layoutTiers(people, { ...size, tiers: TIERS, top: desk ? 110 : 96, bottom: desk ? 40 : 150 });
 
   return (
@@ -58,7 +65,7 @@ export function PeopleTiers({ people }: { people: LayoutPerson[] }) {
             <p
               key={band.tier}
               style={{ top: band.labelY }}
-              className="absolute inset-x-0 text-center text-[10px] font-medium tracking-[0.14em] text-muted uppercase"
+              className={`absolute inset-x-0 text-center text-[10px] font-medium tracking-[0.14em] text-muted uppercase ${GLIDE}`}
             >
               {band.label} · {band.count}
             </p>
@@ -66,12 +73,12 @@ export function PeopleTiers({ people }: { people: LayoutPerson[] }) {
 
           {layout.bubbles.map((b, i) =>
             b.kind === "person" ? (
-              <PersonBubble key={b.person.id} person={b.person} x={b.x} y={b.y} size={b.size} delay={i * 25} />
+              <PersonBubble key={b.person.id} person={b.person} x={b.x} y={b.y} size={b.size} delay={stagger(i)} selected={b.person.id === selectedId} />
             ) : (
               <div
                 key={`more-${b.tier}`}
-                style={{ left: b.x - b.size / 2, top: b.y - b.size / 2, width: b.size, animationDelay: `${i * 25}ms` }}
-                className="absolute flex flex-col items-center gap-1.5 motion-safe:animate-pop-in"
+                style={{ left: b.x - b.size / 2, top: b.y - b.size / 2, width: b.size, animationDelay: `${stagger(i)}ms` }}
+                className={`absolute flex flex-col items-center gap-1.5 ${GLIDE} motion-safe:animate-pop-in`}
               >
                 <span
                   style={{ width: b.size, height: b.size }}
@@ -125,24 +132,26 @@ function EmptyPrompt({ bands }: { bands: { labelY: number }[] }) {
 }
 
 function Circle({ cx, cy, r, className }: { cx: number; cy: number; r: number; className: string }) {
-  return <div style={{ left: cx - r, top: cy - r, width: r * 2, height: r * 2 }} className={`absolute rounded-full ${className}`} />;
+  return <div style={{ left: cx - r, top: cy - r, width: r * 2, height: r * 2 }} className={`absolute rounded-full ${GLIDE} ${className}`} />;
 }
 
-function PersonBubble({ person, x, y, size, delay }: { person: LayoutPerson; x: number; y: number; size: number; delay: number }) {
+type BubbleProps = { person: LayoutPerson; x: number; y: number; size: number; delay: number; selected: boolean };
+
+function PersonBubble({ person, x, y, size, delay, selected }: BubbleProps) {
   const color = personColor(person.color);
   return (
     <Link
       href={`/people/${person.id}`}
       style={{ left: x - size / 2 - 20, top: y - size / 2, width: size + 40, animationDelay: `${delay}ms` }}
-      className="group absolute flex flex-col items-center gap-1.5 rounded-lg outline-none motion-safe:animate-pop-in"
+      className={`group absolute flex flex-col items-center gap-1.5 rounded-lg outline-none ${GLIDE} motion-safe:animate-pop-in`}
     >
       <span
         style={{ width: size, height: size, fontSize: Math.round(size * 0.34) }}
-        className={`flex items-center justify-center rounded-full font-serif shadow-[0_2px_6px_rgba(90,74,58,0.10)] ring-2 ring-white/90 transition group-hover:shadow-[0_6px_14px_rgba(90,74,58,0.18)] group-focus-visible:ring-ink group-active:scale-95 motion-safe:group-hover:-translate-y-0.5 ${color.fill} ${color.ink}`}
+        className={`flex items-center justify-center rounded-full font-serif shadow-[0_2px_6px_rgba(90,74,58,0.10)] ${selected ? "ring-[2.5px] ring-accent" : "ring-2 ring-white/90"} transition group-hover:shadow-[0_6px_14px_rgba(90,74,58,0.18)] group-focus-visible:ring-ink group-active:scale-95 motion-safe:group-hover:-translate-y-0.5 ${color.fill} ${color.ink}`}
       >
         {initials(person.name)}
       </span>
-      <span className={`max-w-full truncate text-xs ${person.closeness === TIERS[TIERS.length - 1].value ? "text-muted" : ""}`}>
+      <span className={`max-w-full truncate text-xs ${selected ? "font-medium" : person.closeness === TIERS[TIERS.length - 1].value ? "text-muted" : ""}`}>
         {firstName(person.name)}
       </span>
     </Link>

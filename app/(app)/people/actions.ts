@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getDb } from "@/lib/db";
 import { createPerson, deletePerson, updatePerson } from "@/lib/people";
@@ -14,6 +15,13 @@ function read(form: FormData) {
   };
 }
 
+// The arcs live in the /people layout, which Next.js reuses across navigations; refresh it after
+// any change to people so the arcs and counts stay current.
+function done(path: string): never {
+  revalidatePath("/people", "layout");
+  redirect(path);
+}
+
 function message(e: unknown) {
   return e instanceof Error ? e.message : "Something went wrong. Try again.";
 }
@@ -24,7 +32,7 @@ export async function addPerson(_prev: PersonFormState, form: FormData): Promise
   } catch (e) {
     return { error: message(e) };
   }
-  redirect("/people");
+  done("/people");
 }
 
 export async function editPerson(id: number, _prev: PersonFormState, form: FormData): Promise<PersonFormState> {
@@ -33,10 +41,10 @@ export async function editPerson(id: number, _prev: PersonFormState, form: FormD
   } catch (e) {
     return { error: message(e) };
   }
-  redirect(`/people/${id}`);
+  done(`/people/${id}`);
 }
 
 export async function removePerson(id: number) {
   deletePerson(getDb(), id);
-  redirect("/people");
+  done("/people");
 }
