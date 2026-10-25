@@ -23,6 +23,12 @@
   --color-rose: #f0d6da;
   --color-rose-ink: #8e4656;
 
+  /* People screen tier bands, innermost first. */
+  --color-band-1: #ede6db;
+  --color-band-2: #f0eae1;
+  --color-band-3: #f3eee6;
+  --color-band-4: #f6f2eb;
+
   --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-newsreader), ui-serif, Georgia, serif;
 
