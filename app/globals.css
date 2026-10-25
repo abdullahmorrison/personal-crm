@@ -1,1 +1,33 @@
 @import "tailwindcss";
+
+/* Design tokens from the Figma style guide. */
+@theme {
+  --color-paper: #faf7f2;
+  --color-surface: #f2ede4;
+  --color-line: #e4ddd1;
+  --color-muted: #807a71;
+  --color-ink: #2b2926;
+  --color-accent: #c9552f;
+
+  /* Person colors: a soft fill plus a darker ink for initials and mentions. */
+  --color-clay: #f1d9cc;
+  --color-clay-ink: #9a4e2e;
+  --color-sand: #f1e3c4;
+  --color-sand-ink: #86652a;
+  --color-sage: #dce6d3;
+  --color-sage-ink: #4e6b45;
+  --color-sky: #d6e2ec;
+  --color-sky-ink: #3f6380;
+  --color-lilac: #e3daea;
+  --color-lilac-ink: #66507e;
+  --color-rose: #f0d6da;
+  --color-rose-ink: #8e4656;
+
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-newsreader), ui-serif, Georgia, serif;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
