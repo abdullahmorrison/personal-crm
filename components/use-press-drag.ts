@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 
-type Point = { clientX: number; clientY: number };
+export type Point = { clientX: number; clientY: number };
 type Handlers = { onStart: (p: Point) => void; onMove: (p: Point) => void; onDrop: (p: Point) => void; onCancel: () => void };
 
 const HOLD_MS = 300; // touch: press and hold this long to pick up
@@ -10,10 +10,21 @@ const SLOP = 6; // px a finger or mouse may wander before it counts as a move
 
 /**
  * Drag that leaves taps and clicks alone. Mouse: starts once the pointer moves while pressed.
- * Touch: starts after a short hold; moving first cancels it. Returns handlers for the element.
+ * Touch: starts after a short hold; moving first cancels it. Escape cancels a drag.
+ * Returns handlers for the element.
  */
 export function usePressDrag({ onStart, onMove, onDrop, onCancel }: Handlers) {
-  const press = useRef<{ x: number; y: number; id: number; el: Element; touch: boolean; active: boolean; timer?: number } | null>(null);
+  const press = useRef<{
+    x: number;
+    y: number;
+    id: number;
+    el: Element;
+    touch: boolean;
+    active: boolean;
+    cancelled?: boolean;
+    timer?: number;
+    unlisten?: () => void;
+  } | null>(null);
   const dragged = useRef(false);
 
   const activate = (p: Point) => {
@@ -21,10 +32,23 @@ export function usePressDrag({ onStart, onMove, onDrop, onCancel }: Handlers) {
     if (!s) return;
     s.active = true;
     s.el.setPointerCapture(s.id);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") cancel();
+    };
+    window.addEventListener("keydown", onKey);
+    s.unlisten = () => window.removeEventListener("keydown", onKey);
     onStart(p);
+  };
+  // Escape puts the person back. The press stays open so the release that follows isn't a click.
+  const cancel = () => {
+    const s = press.current;
+    if (!s?.active || s.cancelled) return;
+    s.cancelled = true;
+    onCancel();
   };
   const end = () => {
     if (press.current?.timer) clearTimeout(press.current.timer);
+    press.current?.unlisten?.();
     press.current = null;
   };
 
@@ -39,7 +63,7 @@ export function usePressDrag({ onStart, onMove, onDrop, onCancel }: Handlers) {
     },
     onPointerMove(e: React.PointerEvent) {
       const s = press.current;
-      if (!s) return;
+      if (!s || s.cancelled) return;
       const moved = Math.hypot(e.clientX - s.x, e.clientY - s.y) > SLOP;
       if (!s.active) {
         if (s.touch && moved) end(); // moved before the hold finished: not a drag
@@ -49,20 +73,19 @@ export function usePressDrag({ onStart, onMove, onDrop, onCancel }: Handlers) {
       onMove(e);
     },
     onPointerUp(e: React.PointerEvent) {
-      const active = press.current?.active;
+      const { active, cancelled } = press.current ?? {};
       end();
       if (active) {
         // Swallow the click the browser may send right after the drop. It doesn't always send one
         // (not when the drop lands elsewhere), so clear the flag once this event is done.
         dragged.current = true;
         setTimeout(() => (dragged.current = false));
-        onDrop(e);
+        if (!cancelled) onDrop(e);
       }
     },
     onPointerCancel() {
-      const active = press.current?.active;
+      cancel();
       end();
-      if (active) onCancel();
     },
     onClickCapture(e: React.MouseEvent) {
       if (dragged.current) e.preventDefault();

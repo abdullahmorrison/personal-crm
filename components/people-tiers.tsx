@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useOptimistic, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import { movePerson } from "@/app/(app)/people/actions";
-import { usePressDrag } from "@/components/use-press-drag";
+import { usePressDrag, type Point } from "@/components/use-press-drag";
 import { firstName, initials } from "@/lib/names";
 import { personColor } from "@/lib/person-colors";
 import { layoutTiers, tierAt, type LayoutPerson } from "@/lib/tier-layout";
@@ -58,19 +58,25 @@ export function PeopleTiers({ people: saved }: { people: LayoutPerson[] }) {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    if (!error) return;
+    const timer = setTimeout(() => setError(null), 4000);
+    return () => clearTimeout(timer);
+  }, [error]);
+
   const desk = useIsDesk();
   const selectedId = Number(usePathname().match(/^\/people\/(\d+)/)?.[1]);
   const layout = size && layoutTiers(people, { ...size, tiers: TIERS, top: desk ? 110 : 96, bottom: desk ? 40 : 150 });
 
-  const local = (p: { clientX: number; clientY: number }) => {
+  const local = (p: Point) => {
     const box = ref.current!.getBoundingClientRect();
     return { x: p.clientX - box.left, y: p.clientY - box.top };
   };
-  const dragTo = (person: LayoutPerson, size: number, p: { clientX: number; clientY: number }) => {
+  const dragTo = (person: LayoutPerson, size: number, p: Point) => {
     const point = local(p);
     setDrag({ person, size, ...point, tier: layout ? tierAt(layout, point) : undefined });
   };
-  const drop = (person: LayoutPerson, p: { clientX: number; clientY: number }) => {
+  const drop = (person: LayoutPerson, p: Point) => {
     const tier = layout ? tierAt(layout, local(p)) : undefined;
     setDrag(null);
     if (!tier || tier === person.closeness) return;
@@ -225,7 +231,6 @@ function Circle({ cx, cy, r, className }: { cx: number; cy: number; r: number; c
   );
 }
 
-type Pointer = { clientX: number; clientY: number };
 type BubbleProps = {
   person: LayoutPerson;
   x: number;
@@ -234,8 +239,8 @@ type BubbleProps = {
   delay: number;
   selected: boolean;
   lifted: boolean;
-  onDrag: (p: Pointer) => void;
-  onDrop: (p: Pointer) => void;
+  onDrag: (p: Point) => void;
+  onDrop: (p: Point) => void;
   onCancel: () => void;
 };
 
