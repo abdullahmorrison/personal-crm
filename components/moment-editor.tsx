@@ -8,19 +8,11 @@ import { Placeholder, UndoRedo } from "@tiptap/extensions";
 import { EditorContent, useEditor } from "@tiptap/react";
 import type { SuggestionKeyDownProps, SuggestionProps } from "@tiptap/suggestion";
 import { useLayoutEffect, useRef, useState } from "react";
-import { fromDoc, toDoc } from "@/lib/mentions";
+import { fromDoc, mentionMatches, toDoc } from "@/lib/mentions";
 import { firstName } from "@/lib/names";
 import { personColor } from "@/lib/person-colors";
 
 type Person = { id: number; name: string; color: number };
-
-const MATCHES = 3;
-
-/** People whose first or last name starts with what was typed after @, closest first. */
-function matches(people: Person[], query: string) {
-  const q = query.toLowerCase();
-  return people.filter((p) => p.name.toLowerCase().split(/\s+/).some((w) => w.startsWith(q))).slice(0, MATCHES);
-}
 
 type Props = {
   people: Person[];
@@ -71,7 +63,7 @@ export function MomentEditor({ people, defaultValue = "", autoFocus, onMention, 
         },
         suggestion: {
           decorationClass: "text-accent",
-          items: ({ query }) => matches(latest.current.people, query),
+          items: ({ query }) => mentionMatches(latest.current.people, query),
           render: () => ({
             onStart: (props) => setMenu({ props, selected: 0 }),
             onUpdate: (props) => setMenu((m) => ({ props, selected: Math.min(m?.selected ?? 0, Math.max(props.items.length - 1, 0)) })),

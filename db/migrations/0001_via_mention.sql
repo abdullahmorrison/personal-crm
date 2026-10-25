@@ -1,0 +1,1 @@
+ALTER TABLE `entry_people` ADD `via_mention` integer DEFAULT false NOT NULL;

@@ -95,6 +95,37 @@ describe("listMoments", () => {
   });
 });
 
+describe("people there only because of a mention", () => {
+  it("are stored as such, while everyone else is kept, and an edit can lock them in", () => {
+    const { db, sam, priya } = setup();
+    const body = "Ramen with @[Sam Rivera](person:" + sam.id + ")";
+    const m = createMoment(db, { body, date: "2026-10-20", personIds: [sam.id, priya.id], viaMention: [sam.id] });
+    expect(getMoment(db, m.id).people).toMatchObject([
+      { id: priya.id, viaMention: false },
+      { id: sam.id, viaMention: true },
+    ]);
+    updateMoment(db, m.id, { body, date: "2026-10-20", personIds: [sam.id, priya.id] });
+    expect(getMoment(db, m.id).people.every((p) => !p.viaMention)).toBe(true);
+  });
+
+  it("ignores a mention flag for someone not in the moment", () => {
+    const { db, sam, priya } = setup();
+    const m = createMoment(db, { body: "Hi", date: "2026-10-20", personIds: [priya.id], viaMention: [sam.id] });
+    expect(getMoment(db, m.id).people).toMatchObject([{ id: priya.id, viaMention: false }]);
+  });
+});
+
+describe("mentioned", () => {
+  it("lists everyone the text mentions, in the moment or not, and skips deleted people", () => {
+    const { db, sam, priya } = setup();
+    const gone = createPerson(db, { name: "Omar Farouk" });
+    const body = `@[Sam Rivera](person:${sam.id}) and @[Priya Shah](person:${priya.id}) and @[Omar Farouk](person:${gone.id})`;
+    const m = createMoment(db, { body, date: "2026-10-20", personIds: [sam.id] });
+    deletePerson(db, gone.id);
+    expect(getMoment(db, m.id).mentioned.map((p) => p.id).sort()).toEqual([sam.id, priya.id].sort());
+  });
+});
+
 describe("groupByMonth", () => {
   it("groups consecutive moments by month in order", () => {
     const groups = groupByMonth([{ date: "2026-10-22" }, { date: "2026-10-01" }, { date: "2026-09-14" }]);

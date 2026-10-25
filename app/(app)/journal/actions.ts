@@ -12,6 +12,7 @@ function read(form: FormData) {
     body: String(form.get("body") ?? "").replace(/\r\n?/g, "\n"), // forms send line breaks as \r\n
     date: String(form.get("date") ?? ""),
     personIds: form.getAll("personIds").map(Number),
+    viaMention: form.getAll("viaMention").map(Number),
   };
 }
 

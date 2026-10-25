@@ -4,7 +4,7 @@ import { personColor } from "@/lib/person-colors";
 
 type Person = { id: number; name: string; color: number };
 
-/** A moment's text, with each mention as the person's first name in their color. */
+/** A moment's text, with each mention as the person's first name in their color. `people` are those it mentions. */
 export function MomentBody({ body, people }: { body: string; people: Person[] }) {
   return parseBody(body).map((s, i) => {
     if ("text" in s) return s.text;

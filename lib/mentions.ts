@@ -20,6 +20,12 @@ export function parseBody(body: string): Segment[] {
   return segments;
 }
 
+/** Who the @ menu offers: people whose first or last name starts with the query, in the given order, at most 3. */
+export function mentionMatches<P extends { name: string }>(people: P[], query: string) {
+  const q = query.toLowerCase();
+  return people.filter((p) => p.name.toLowerCase().split(/\s+/).some((w) => w.startsWith(q))).slice(0, 3);
+}
+
 /** Everyone mentioned in a body, once each. */
 export function mentionedIds(body: string) {
   return [...new Set(parseBody(body).flatMap((s) => ("mention" in s ? [s.mention.id] : [])))];

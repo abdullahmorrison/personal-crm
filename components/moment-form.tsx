@@ -16,7 +16,7 @@ type Person = { id: number; name: string; color: number };
 type Props = {
   action: (prev: MomentFormState, form: FormData) => Promise<MomentFormState>;
   people: Person[];
-  defaults?: { body: string; date: string; personIds: number[] };
+  defaults?: { body: string; date: string; personIds: number[]; viaMention: number[] };
   closeHref: string;
 };
 
@@ -29,10 +29,7 @@ export function MomentForm({ action, people, defaults, closeHref }: Props) {
   const [picked, setPicked] = useState<string | null>(defaults?.date ?? null);
   const date = picked ?? today;
   // Who was there, and which of them a mention put there (so removing the mention removes them).
-  const [withState, setWith] = useState(() => {
-    const chosen = defaults?.personIds ?? [];
-    return { chosen, linked: mentionedIds(defaults?.body ?? "").filter((id) => chosen.includes(id)) };
-  });
+  const [withState, setWith] = useState({ chosen: defaults?.personIds ?? [], linked: defaults?.viaMention ?? [] });
   const { chosen } = withState;
 
   return (
@@ -58,6 +55,9 @@ export function MomentForm({ action, people, defaults, closeHref }: Props) {
       />
       {chosen.map((id) => (
         <input key={id} type="hidden" name="personIds" value={id} />
+      ))}
+      {withState.linked.map((id) => (
+        <input key={id} type="hidden" name="viaMention" value={id} />
       ))}
 
       <MomentEditor

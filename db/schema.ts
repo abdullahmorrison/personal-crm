@@ -28,6 +28,8 @@ export const entryPeople = sqliteTable(
   {
     entryId: integer("entry_id").notNull().references(() => entries.id, { onDelete: "cascade" }),
     personId: integer("person_id").notNull().references(() => people.id, { onDelete: "cascade" }),
+    // There only because the text mentions them: deleting the mention takes them out.
+    viaMention: integer("via_mention", { mode: "boolean" }).notNull().default(false),
   },
   // The primary key covers lookups by entry; the index covers a person's timeline.
   (t) => [primaryKey({ columns: [t.entryId, t.personId] }), index("entry_people_person_id").on(t.personId)],

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fromDoc, linkedAfterHandEdit, mentionedIds, mentionToken, parseBody, syncWith, toDoc } from "./mentions";
+import { fromDoc, linkedAfterHandEdit, mentionMatches, mentionedIds, mentionToken, parseBody, syncWith, toDoc } from "./mentions";
 
 describe("parseBody", () => {
   it("splits text and mentions in order", () => {
@@ -82,5 +82,22 @@ describe("linkedAfterHandEdit", () => {
 
   it("keeps links for everyone else", () => {
     expect(linkedAfterHandEdit([2], [2], [2, 3])).toEqual([2]);
+  });
+});
+
+describe("mentionMatches", () => {
+  const people = [{ name: "Sam Rivera" }, { name: "Priya Shah" }, { name: "Jordan Lee" }, { name: "Samira Ali" }];
+
+  it("offers the first few people for a bare @, in the order given", () => {
+    expect(mentionMatches(people, "").map((p) => p.name)).toEqual(["Sam Rivera", "Priya Shah", "Jordan Lee"]);
+  });
+
+  it("matches the start of any name, ignoring case", () => {
+    expect(mentionMatches(people, "sa").map((p) => p.name)).toEqual(["Sam Rivera", "Samira Ali"]);
+    expect(mentionMatches(people, "LE").map((p) => p.name)).toEqual(["Jordan Lee"]);
+  });
+
+  it("doesn't match the middle of a name", () => {
+    expect(mentionMatches(people, "iya")).toEqual([]);
   });
 });
