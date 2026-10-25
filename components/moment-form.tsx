@@ -8,6 +8,7 @@ import { DatePicker } from "@/components/date-picker";
 import { MomentEditor } from "@/components/moment-editor";
 import { localToday, longDate } from "@/lib/dates";
 import { linkedAfterHandEdit, mentionedIds, syncWith } from "@/lib/mentions";
+import { firstName } from "@/lib/names";
 import { personColor } from "@/lib/person-colors";
 
 type Person = { id: number; name: string; color: number };
@@ -50,7 +51,13 @@ export function MomentForm({ action, people: initialPeople, defaults, closeHref 
       <DateHeading date={date} today={today} onChange={setPicked} />
       <input type="hidden" name="date" value={date} />
 
-      <WithPeople people={people} chosen={chosen} onChange={(ids) => setWith((w) => ({ chosen: ids, linked: linkedAfterHandEdit(w.linked, w.chosen, ids) }))} />
+      <WithPeople
+        people={people}
+        chosen={chosen}
+        linked={withState.linked}
+        onChange={(ids) => setWith((w) => ({ chosen: ids, linked: linkedAfterHandEdit(w.linked, w.chosen, ids) }))}
+        onLock={(id) => setWith((w) => ({ ...w, linked: w.linked.filter((x) => x !== id) }))}
+      />
       {chosen.map((id) => (
         <input key={id} type="hidden" name="personIds" value={id} />
       ))}
@@ -111,8 +118,23 @@ function DateHeading({ date, today, onChange }: { date: string; today: string; o
   );
 }
 
-/** "with Sam Priya + someone": chips for who was there, and a search to add more. */
-function WithPeople({ people, chosen, onChange }: { people: Person[]; chosen: number[]; onChange: (ids: number[]) => void }) {
+/**
+ * "with Sam Priya + someone": chips for who was there, and a search to add more. Someone there only
+ * because of a mention (`linked`) is dashed, and tapping locks them in; tapping anyone else removes them.
+ */
+function WithPeople({
+  people,
+  chosen,
+  linked,
+  onChange,
+  onLock,
+}: {
+  people: Person[];
+  chosen: number[];
+  linked: number[];
+  onChange: (ids: number[]) => void;
+  onLock: (id: number) => void;
+}) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const byId = new Map(people.map((p) => [p.id, p]));
@@ -132,6 +154,21 @@ function WithPeople({ people, chosen, onChange }: { people: Person[]; chosen: nu
         const p = byId.get(id);
         if (!p) return null;
         const c = personColor(p.color);
+        if (linked.includes(id)) {
+          const label = `Keep ${firstName(p.name)} in this moment`;
+          return (
+            <button
+              key={id}
+              type="button"
+              onClick={() => onLock(id)}
+              aria-label={label}
+              title={label}
+              className={`rounded-full border border-dashed border-current/45 px-2.5 py-px font-medium ${c.ink}`}
+            >
+              {p.name}
+            </button>
+          );
+        }
         return (
           <button
             key={id}
