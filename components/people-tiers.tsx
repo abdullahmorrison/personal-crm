@@ -131,19 +131,20 @@ function Circle({ cx, cy, r, className }: { cx: number; cy: number; r: number; c
 function PersonBubble({ person, x, y, size, delay }: { person: LayoutPerson; x: number; y: number; size: number; delay: number }) {
   const color = personColor(person.color);
   return (
-    <div
+    <Link
+      href={`/people/${person.id}`}
       style={{ left: x - size / 2 - 20, top: y - size / 2, width: size + 40, animationDelay: `${delay}ms` }}
-      className="absolute flex flex-col items-center gap-1.5 motion-safe:animate-pop-in"
+      className="group absolute flex flex-col items-center gap-1.5 rounded-lg outline-none motion-safe:animate-pop-in"
     >
       <span
         style={{ width: size, height: size, fontSize: Math.round(size * 0.34) }}
-        className={`flex items-center justify-center rounded-full font-serif shadow-[0_2px_6px_rgba(90,74,58,0.10)] ring-2 ring-white/90 ${color.fill} ${color.ink}`}
+        className={`flex items-center justify-center rounded-full font-serif shadow-[0_2px_6px_rgba(90,74,58,0.10)] ring-2 ring-white/90 transition group-hover:shadow-[0_6px_14px_rgba(90,74,58,0.18)] group-focus-visible:ring-ink group-active:scale-95 motion-safe:group-hover:-translate-y-0.5 ${color.fill} ${color.ink}`}
       >
         {initials(person.name)}
       </span>
       <span className={`max-w-full truncate text-xs ${person.closeness === TIERS[TIERS.length - 1].value ? "text-muted" : ""}`}>
         {firstName(person.name)}
       </span>
-    </div>
+    </Link>
   );
 }

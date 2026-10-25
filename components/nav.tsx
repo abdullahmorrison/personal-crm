@@ -3,6 +3,7 @@
 import { BookOpen, MapPin, PenLine, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Suspense } from "react";
 
 const TABS = [
   { href: "/people", label: "People", Icon: Users },
@@ -10,9 +11,21 @@ const TABS = [
   { href: "/places", label: "Places", Icon: MapPin },
 ] as const;
 
-function useIsActive() {
-  const path = usePathname();
-  return (href: string) => path === href || path.startsWith(`${href}/`);
+// The path isn't known while prerendering routes like /people/[id], so anything that reads it sits
+// in Suspense. The fallback renders the same links with nothing highlighted, so nothing shifts.
+type Path = string | null;
+const isActive = (path: Path, href: string) => path !== null && (path === href || path.startsWith(`${href}/`));
+
+function WithPath({ render }: { render: (path: Path) => React.ReactNode }) {
+  return (
+    <Suspense fallback={render(null)}>
+      <ReadPath render={render} />
+    </Suspense>
+  );
+}
+
+function ReadPath({ render }: { render: (path: Path) => React.ReactNode }) {
+  return render(usePathname());
 }
 
 export function LogButton({ className = "" }: { className?: string }) {
@@ -28,59 +41,79 @@ export function LogButton({ className = "" }: { className?: string }) {
 }
 
 // Form screens have their own submit button, so the floating one would compete with it.
-const FORM_ROUTES = ["/write", "/people/new"];
+const FORM_ROUTES = [/^\/write$/, /^\/people\/new$/, /^\/people\/\d+\/edit$/];
 
 /** Phones: floating Log a moment button above the tab bar, hidden on form screens. */
 export function FloatingLogButton() {
-  const path = usePathname();
-  if (FORM_ROUTES.includes(path)) return null;
-  return <LogButton className="fixed right-4 bottom-[calc(max(env(safe-area-inset-bottom),12px)+76px)] z-20 desk:hidden" />;
+  return (
+    <WithPath
+      render={(path) =>
+        path === null || FORM_ROUTES.some((route) => route.test(path)) ? null : (
+          <LogButton className="fixed right-4 bottom-[calc(max(env(safe-area-inset-bottom),12px)+76px)] z-20 desk:hidden" />
+        )
+      }
+    />
+  );
 }
 
 /** Phones: bottom tab bar. */
 export function TabBar() {
-  const isActive = useIsActive();
   return (
     <nav className="fixed inset-x-0 bottom-0 z-20 flex border-t border-line bg-paper pt-2.5 pb-[max(env(safe-area-inset-bottom),12px)] desk:hidden">
+      <WithPath render={(path) => <TabBarLinks path={path} />} />
+    </nav>
+  );
+}
+
+function TabBarLinks({ path }: { path: Path }) {
+  return (
+    <>
       {TABS.map(({ href, label, Icon }) => {
-        const on = isActive(href);
+        const on = isActive(path, href);
         return (
           <Link
             key={href}
             href={href}
-            className={`flex flex-1 flex-col items-center gap-1 rounded-lg text-[11px] transition-colors active:bg-surface outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-0 focus-visible:ring-offset-paper ${on ? "font-medium text-accent" : "text-muted hover:text-ink"}`}
+            className={`flex flex-1 flex-col items-center gap-1 rounded-lg text-[11px] transition-colors active:bg-surface outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-0 ${on ? "font-medium text-accent" : "text-muted hover:text-ink"}`}
           >
             <Icon size={22} />
             {label}
           </Link>
         );
       })}
-    </nav>
+    </>
   );
 }
 
 /** Desktop: left sidebar. */
 export function Sidebar() {
-  const isActive = useIsActive();
   return (
     <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-6 border-r border-line px-5 py-7 desk:flex">
       <span className="text-[17px] font-medium">Personal CRM</span>
       <LogButton />
       <nav className="flex flex-col gap-1">
-        {TABS.map(({ href, label, Icon }) => {
-          const on = isActive(href);
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={`flex items-center gap-3 rounded-[10px] px-3 py-2.5 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-0 ${on ? "bg-surface font-medium text-ink" : "text-muted hover:bg-surface/60 hover:text-ink"}`}
-            >
-              <Icon size={20} className={on ? "text-accent" : ""} />
-              {label}
-            </Link>
-          );
-        })}
+        <WithPath render={(path) => <SidebarLinks path={path} />} />
       </nav>
     </aside>
+  );
+}
+
+function SidebarLinks({ path }: { path: Path }) {
+  return (
+    <>
+      {TABS.map(({ href, label, Icon }) => {
+        const on = isActive(path, href);
+        return (
+          <Link
+            key={href}
+            href={href}
+            className={`flex items-center gap-3 rounded-[10px] px-3 py-2.5 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-0 ${on ? "bg-surface font-medium text-ink" : "text-muted hover:bg-surface/60 hover:text-ink"}`}
+          >
+            <Icon size={20} className={on ? "text-accent" : ""} />
+            {label}
+          </Link>
+        );
+      })}
+    </>
   );
 }

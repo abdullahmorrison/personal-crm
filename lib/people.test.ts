@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { openDb } from "./db";
-import { createPerson } from "./people";
+import { entries, entryPeople } from "@/db/schema";
+import { createPerson, deletePerson, getPerson, updatePerson } from "./people";
 import { NEW_PERSON_CLOSENESS } from "./tiers";
 
 describe("createPerson", () => {
@@ -26,5 +27,41 @@ describe("createPerson", () => {
     const db = openDb(":memory:");
     expect(() => createPerson(db, { name: "Sam", closeness: 0 })).toThrow("Unknown closeness");
     expect(() => createPerson(db, { name: "Sam", closeness: 7 })).toThrow("Unknown closeness");
+  });
+});
+
+describe("updatePerson", () => {
+  it("changes name, closeness, and notes but keeps the color", () => {
+    const db = openDb(":memory:");
+    const sam = createPerson(db, { name: "Sam" });
+    const updated = updatePerson(db, sam.id, { name: " Sam Rivera ", closeness: 1, notes: " Met at soccer " });
+    expect(updated).toMatchObject({ name: "Sam Rivera", closeness: 1, notes: "Met at soccer", color: sam.color });
+  });
+
+  it("applies the same checks as creating", () => {
+    const db = openDb(":memory:");
+    const sam = createPerson(db, { name: "Sam" });
+    expect(() => updatePerson(db, sam.id, { name: "" })).toThrow("needs a name");
+    expect(() => updatePerson(db, sam.id, { name: "Sam", closeness: 9 })).toThrow("Unknown closeness");
+  });
+
+  it("fails clearly when the person is gone", () => {
+    const db = openDb(":memory:");
+    expect(() => updatePerson(db, 999, { name: "Ghost" })).toThrow("no longer exists");
+  });
+});
+
+describe("deletePerson", () => {
+  it("removes the person but keeps their moments", () => {
+    const db = openDb(":memory:");
+    const sam = createPerson(db, { name: "Sam" });
+    const entry = db.insert(entries).values({ body: "Ramen", date: "2026-10-20" }).returning().get();
+    db.insert(entryPeople).values({ entryId: entry.id, personId: sam.id }).run();
+
+    deletePerson(db, sam.id);
+
+    expect(getPerson(db, sam.id)).toBeUndefined();
+    expect(db.select().from(entries).all()).toHaveLength(1);
+    expect(db.select().from(entryPeople).all()).toHaveLength(0);
   });
 });
