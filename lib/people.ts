@@ -24,3 +24,10 @@ export function createPerson(db: Db, input: { name: string; closeness?: number; 
     .returning()
     .get();
 }
+
+export function listPeople(db: Db) {
+  return db
+    .select({ id: people.id, name: people.name, closeness: people.closeness, color: people.color })
+    .from(people)
+    .all();
+}
