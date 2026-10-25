@@ -70,7 +70,17 @@ function DateHeading({ date, onChange }: { date: string; onChange: (date: string
     <div className="relative mt-6 self-start">
       <button
         type="button"
-        onClick={() => input.current?.showPicker()}
+        onClick={() => {
+          const el = input.current;
+          if (!el) return;
+          try {
+            el.showPicker();
+          } catch {
+            // Browsers without showPicker (older Safari) still open the picker on focus and click.
+            el.focus();
+            el.click();
+          }
+        }}
         className="rounded-lg font-serif text-[26px] italic underline-offset-4 decoration-line hover:underline"
       >
         {date ? longDate(date) : " "}

@@ -48,6 +48,14 @@ describe("updateMoment", () => {
     expect(getMoment(db, m.id)).toMatchObject({ body: "Ramen with Priya", date: "2026-10-21", people: [{ id: priya.id }] });
   });
 
+  it("leaves the moment as it was when an edit is rejected", () => {
+    const { db, sam } = setup();
+    const m = createMoment(db, { body: "Ramen", date: "2026-10-20", personIds: [sam.id] });
+    expect(() => updateMoment(db, m.id, { body: "  ", date: "2026-10-21", personIds: [] })).toThrow("Write something");
+    expect(() => updateMoment(db, m.id, { body: "Ramen", date: "2026-10-21", personIds: [999] })).toThrow("no longer exists");
+    expect(getMoment(db, m.id)).toMatchObject({ body: "Ramen", date: "2026-10-20", people: [{ id: sam.id }] });
+  });
+
   it("fails clearly when the moment is gone", () => {
     const { db } = setup();
     expect(() => updateMoment(db, 999, { body: "Hi", date: "2026-10-22", personIds: [] })).toThrow("no longer exists");
