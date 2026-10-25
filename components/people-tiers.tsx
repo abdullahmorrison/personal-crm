@@ -38,7 +38,12 @@ export function PeopleTiers({ people }: { people: LayoutPerson[] }) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const observer = new ResizeObserver(([entry]) => setSize({ width: entry.contentRect.width, height: entry.contentRect.height }));
+    const observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      // Next.js keeps this screen mounted but hidden (0×0) while you're on another tab. Keep the
+      // last real layout, or the arcs would glide in from a collapsed one when you come back.
+      if (width > 0 && height > 0) setSize({ width, height });
+    });
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
