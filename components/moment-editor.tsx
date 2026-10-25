@@ -33,28 +33,36 @@ type Props = {
   autoFocus?: boolean;
   /** Someone was mentioned, or added from the menu: they belong in "with". */
   onMention: (person: Person) => void;
+  /** The body changed, so mentions may have come or gone. */
+  onChange: (body: string) => void;
 };
 
 /**
  * What happened, in the serif. Typing @ opens a menu of people; picking one puts their name
  * in the text in their color. Posts the body, with mentions as tokens, as the `body` field.
  */
-export function MomentEditor({ people, defaultValue = "", autoFocus, onMention }: Props) {
+export function MomentEditor({ people, defaultValue = "", autoFocus, onMention, onChange }: Props) {
   const [body, setBody] = useState(defaultValue);
   const [menu, setMenu] = useState<{ props: SuggestionProps<Option>; selected: number } | null>(null);
   const [error, setError] = useState("");
   const wrap = useRef<HTMLDivElement>(null);
   // The editor is built once, so its callbacks read the latest values through a ref.
-  const latest = useRef({ people, onMention, menu });
+  const latest = useRef({ people, onMention, onChange, menu });
   useLayoutEffect(() => {
-    latest.current = { people, onMention, menu };
+    latest.current = { people, onMention, onChange, menu };
   });
+
+  const adding = useRef(false); // "+ New" is saving: ignore repeat picks so no one is added twice
 
   const pick = async (props: SuggestionProps<Option>, option: Option) => {
     let person = "person" in option ? option.person : undefined;
     if (!person) {
-      const { person: added, error } = await quickAddPerson((option as { create: string }).create);
+      if (adding.current) return;
+      adding.current = true;
+      const { person: added, error } = await quickAddPerson((option as { create: string }).create).finally(() => (adding.current = false));
       if (!added) return setError(error ?? "");
+      // Typing went on while saving: only replace the @name if it's still there as it was.
+      if (props.editor.state.doc.textBetween(props.range.from, props.range.to) !== props.text) return;
       person = added;
     }
     setError("");
@@ -112,7 +120,11 @@ export function MomentEditor({ people, defaultValue = "", autoFocus, onMention }
         "aria-label": "What happened?",
       },
     },
-    onUpdate: ({ editor }) => setBody(fromDoc(editor.getJSON())),
+    onUpdate: ({ editor }) => {
+      const next = fromDoc(editor.getJSON());
+      setBody(next);
+      latest.current.onChange(next);
+    },
   });
   /* eslint-enable react-hooks/refs */
 

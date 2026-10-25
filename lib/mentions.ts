@@ -20,6 +20,21 @@ export function parseBody(body: string): Segment[] {
   return segments;
 }
 
+/** Everyone mentioned in a body, once each. */
+export function mentionedIds(body: string) {
+  return [...new Set(parseBody(body).flatMap((s) => ("mention" in s ? [s.mention.id] : [])))];
+}
+
+/**
+ * "with" after the body changes. `linked` are the people a mention put there: they leave with their
+ * last mention and come back if it does (undo). Everyone else stays as chosen.
+ */
+export function syncWith(chosen: number[], linked: number[], mentioned: number[]) {
+  const gone = linked.filter((id) => !mentioned.includes(id));
+  const back = linked.filter((id) => mentioned.includes(id) && !chosen.includes(id));
+  return [...chosen.filter((id) => !gone.includes(id)), ...back];
+}
+
 export function mentionToken(id: number, label: string) {
   return `@[${label.replace(/[\]\n]/g, "")}](person:${id})`;
 }

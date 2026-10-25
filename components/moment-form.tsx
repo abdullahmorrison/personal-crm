@@ -7,6 +7,7 @@ import type { MomentFormState } from "@/app/(app)/journal/actions";
 import { DatePicker } from "@/components/date-picker";
 import { MomentEditor } from "@/components/moment-editor";
 import { localToday, longDate } from "@/lib/dates";
+import { mentionedIds, syncWith } from "@/lib/mentions";
 import { personColor } from "@/lib/person-colors";
 
 type Person = { id: number; name: string; color: number };
@@ -26,7 +27,12 @@ export function MomentForm({ action, people: initialPeople, defaults, closeHref 
   const today = useSyncExternalStore(noSubscribe, localToday, () => "");
   const [picked, setPicked] = useState<string | null>(defaults?.date ?? null);
   const date = picked ?? today;
-  const [chosen, setChosen] = useState<number[]>(defaults?.personIds ?? []);
+  // Who was there, and which of them a mention put there (so removing the mention removes them).
+  const [withState, setWith] = useState(() => {
+    const chosen = defaults?.personIds ?? [];
+    return { chosen, linked: mentionedIds(defaults?.body ?? "").filter((id) => chosen.includes(id)) };
+  });
+  const { chosen } = withState;
   // Grows when someone new is added while mentioning.
   const [people, setPeople] = useState(initialPeople);
 
@@ -44,7 +50,7 @@ export function MomentForm({ action, people: initialPeople, defaults, closeHref 
       <DateHeading date={date} today={today} onChange={setPicked} />
       <input type="hidden" name="date" value={date} />
 
-      <WithPeople people={people} chosen={chosen} onChange={setChosen} />
+      <WithPeople people={people} chosen={chosen} onChange={(ids) => setWith((w) => ({ chosen: ids, linked: w.linked.filter((id) => ids.includes(id)) }))} />
       {chosen.map((id) => (
         <input key={id} type="hidden" name="personIds" value={id} />
       ))}
@@ -55,8 +61,9 @@ export function MomentForm({ action, people: initialPeople, defaults, closeHref 
         autoFocus={!defaults}
         onMention={(p) => {
           setPeople((all) => (all.some((x) => x.id === p.id) ? all : [...all, p]));
-          setChosen((ids) => (ids.includes(p.id) ? ids : [...ids, p.id]));
+          setWith((w) => (w.chosen.includes(p.id) ? w : { chosen: [...w.chosen, p.id], linked: [...w.linked, p.id] }));
         }}
+        onChange={(body) => setWith((w) => ({ ...w, chosen: syncWith(w.chosen, w.linked, mentionedIds(body)) }))}
       />
 
       {state.error && (
