@@ -71,8 +71,8 @@ export function PeopleTiers({ people }: { people: LayoutPerson[] }) {
           {layout.bands.map((band) => (
             <p
               key={band.tier}
-              style={{ transform: at(0, band.labelY) }}
-              className={`absolute inset-x-0 top-0 text-center text-[10px] font-medium tracking-[0.14em] text-muted uppercase ${GLIDE}`}
+              style={{ transform: `${at(layout.center.x, band.labelY)} translateX(-50%)` }}
+              className={`absolute top-0 left-0 whitespace-nowrap text-[10px] font-medium tracking-[0.14em] text-muted uppercase ${GLIDE}`}
             >
               {band.label} · {band.count}
             </p>
