@@ -47,12 +47,14 @@ export function deleteMoment(db: Db, id: number) {
   db.delete(entries).where(eq(entries.id, id)).run(); // links go with it (cascade)
 }
 
-/** Every moment, newest first, with the people in it. */
-export function listMoments(db: Db, where?: { id?: number }) {
+/** Every moment, newest first, with the people in it. Narrow it to one moment, or to one person's moments. */
+export function listMoments(db: Db, where?: { id?: number; personId?: number }) {
+  const withPerson = (personId: number) =>
+    inArray(entries.id, db.select({ id: entryPeople.entryId }).from(entryPeople).where(eq(entryPeople.personId, personId)));
   const rows = db
     .select()
     .from(entries)
-    .where(where?.id ? eq(entries.id, where.id) : undefined)
+    .where(where?.id ? eq(entries.id, where.id) : where?.personId ? withPerson(where.personId) : undefined)
     .orderBy(desc(entries.date), desc(entries.id))
     .all();
   const links = rows.length
