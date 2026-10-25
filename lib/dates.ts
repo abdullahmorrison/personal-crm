@@ -13,6 +13,9 @@ export const longDate = (date: string) => fmt({ weekday: "long", month: "long", 
 /** "Thu, Oct 22" */
 export const shortDate = (date: string) => fmt({ weekday: "short", month: "short", day: "numeric" }).format(day(date));
 
+/** "Oct" */
+export const shortMonth = (date: string) => fmt({ month: "short" }).format(day(date));
+
 /** "October 2026" */
 export const monthLabel = (date: string) => fmt({ month: "long", year: "numeric" }).format(day(date));
 

@@ -2,7 +2,7 @@
 
 import { Plus, X } from "lucide-react";
 import Link from "next/link";
-import { useActionState, useCallback, useState, useSyncExternalStore } from "react";
+import { useActionState, useCallback, useRef, useState, useSyncExternalStore } from "react";
 import type { MomentFormState } from "@/app/(app)/journal/actions";
 import { DatePicker } from "@/components/date-picker";
 import { localToday, longDate } from "@/lib/dates";
@@ -67,10 +67,16 @@ export function MomentForm({ action, people, defaults, closeHref }: Props) {
 /** The date as an italic heading; tapping it opens a calendar under it. */
 function DateHeading({ date, today, onChange }: { date: string; today: string; onChange: (date: string) => void }) {
   const [open, setOpen] = useState(false);
-  const close = useCallback(() => setOpen(false), []);
+  const button = useRef<HTMLButtonElement>(null);
+  // Closing removes the focused day, so hand focus back to the heading (unless a tap moved it elsewhere).
+  const close = useCallback((refocus: boolean) => {
+    setOpen(false);
+    if (refocus) button.current?.focus();
+  }, []);
   return (
     <div className="relative mt-6 self-start">
       <button
+        ref={button}
         type="button"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
@@ -86,7 +92,7 @@ function DateHeading({ date, today, onChange }: { date: string; today: string; o
           onClose={close}
           onPick={(d) => {
             onChange(d);
-            close();
+            close(true);
           }}
         />
       )}

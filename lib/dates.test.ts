@@ -1,11 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { isDate, localToday, longDate, monthGrid, monthLabel, shiftMonth, shortDate } from "./dates";
+import { isDate, localToday, longDate, monthGrid, monthLabel, shiftMonth, shortDate, shortMonth } from "./dates";
 
 describe("dates", () => {
   it("formats calendar days without shifting them", () => {
     expect(longDate("2026-10-22")).toBe("Thursday, October 22");
     expect(shortDate("2026-01-01")).toBe("Thu, Jan 1");
     expect(monthLabel("2026-12-31")).toBe("December 2026");
+    expect(shortMonth("2026-01-01")).toBe("Jan");
   });
 
   it("accepts only real YYYY-MM-DD dates", () => {
