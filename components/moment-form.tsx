@@ -163,7 +163,7 @@ function WithPeople({
               onClick={() => onLock(id)}
               aria-label={label}
               title={label}
-              className={`rounded-full border border-dashed border-current/45 px-2.5 py-px font-medium ${c.ink}`}
+              className={`rounded-full border border-dashed border-current/45 px-2.5 py-px font-medium transition-colors ${c.ink} ${c.hover}`}
             >
               {p.name}
             </button>
@@ -175,7 +175,7 @@ function WithPeople({
             type="button"
             onClick={() => onChange(chosen.filter((x) => x !== id))}
             aria-label={`Remove ${p.name}`}
-            className={`group flex items-center gap-1 rounded-full px-2.5 py-0.5 font-medium ${c.fill} ${c.ink}`}
+            className={`group flex items-center gap-1 rounded-full px-2.5 py-0.5 font-medium transition-[filter] hover:brightness-95 ${c.fill} ${c.ink}`}
           >
             {p.name}
             <X size={12} className="opacity-50 group-hover:opacity-100" />
