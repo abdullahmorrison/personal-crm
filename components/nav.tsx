@@ -27,6 +27,16 @@ export function LogButton({ className = "" }: { className?: string }) {
   );
 }
 
+// Form screens have their own submit button, so the floating one would compete with it.
+const FORM_ROUTES = ["/write", "/people/new"];
+
+/** Phones: floating Log a moment button above the tab bar, hidden on form screens. */
+export function FloatingLogButton() {
+  const path = usePathname();
+  if (FORM_ROUTES.includes(path)) return null;
+  return <LogButton className="fixed right-4 bottom-[calc(max(env(safe-area-inset-bottom),12px)+76px)] z-20 desk:hidden" />;
+}
+
 /** Phones: bottom tab bar. */
 export function TabBar() {
   const isActive = useIsActive();
