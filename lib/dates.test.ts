@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { isDate, localToday, longDate, monthLabel, shortDate } from "./dates";
+import { isDate, localToday, longDate, monthGrid, monthLabel, shiftMonth, shortDate } from "./dates";
 
 describe("dates", () => {
   it("formats calendar days without shifting them", () => {
@@ -32,5 +32,26 @@ describe("localToday", () => {
     vi.setSystemTime(new Date("2026-10-22T20:30:00Z")); // already the 23rd in Tokyo
     process.env.TZ = "Asia/Tokyo";
     expect(localToday()).toBe("2026-10-23");
+  });
+});
+
+describe("monthGrid", () => {
+  it("starts on the right weekday and has every day of the month", () => {
+    const { blanks, days } = monthGrid("2026-10-22"); // Oct 1 2026 is a Thursday
+    expect(blanks).toBe(4);
+    expect(days).toHaveLength(31);
+    expect([days[0], days.at(-1)]).toEqual(["2026-10-01", "2026-10-31"]);
+  });
+
+  it("knows leap years", () => {
+    expect(monthGrid("2028-02-10").days).toHaveLength(29);
+    expect(monthGrid("2026-02-10").days).toHaveLength(28);
+  });
+});
+
+describe("shiftMonth", () => {
+  it("moves across years from any day of the month", () => {
+    expect(shiftMonth("2026-12-31", 1)).toBe("2027-01-01");
+    expect(shiftMonth("2026-01-31", -1)).toBe("2025-12-01");
   });
 });

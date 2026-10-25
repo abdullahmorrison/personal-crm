@@ -2,8 +2,9 @@
 
 import { Plus, X } from "lucide-react";
 import Link from "next/link";
-import { useActionState, useRef, useState, useSyncExternalStore } from "react";
+import { useActionState, useCallback, useState, useSyncExternalStore } from "react";
 import type { MomentFormState } from "@/app/(app)/journal/actions";
+import { DatePicker } from "@/components/date-picker";
 import { localToday, longDate } from "@/lib/dates";
 import { personColor } from "@/lib/person-colors";
 
@@ -37,7 +38,7 @@ export function MomentForm({ action, people, defaults, closeHref }: Props) {
         </button>
       </div>
 
-      <DateHeading date={date} onChange={setPicked} />
+      <DateHeading date={date} today={today} onChange={setPicked} />
       <input type="hidden" name="date" value={date} />
 
       <WithPeople people={people} chosen={chosen} onChange={setChosen} />
@@ -63,38 +64,32 @@ export function MomentForm({ action, people, defaults, closeHref }: Props) {
   );
 }
 
-/** The date as an italic heading; tapping it opens the device's own date picker. */
-function DateHeading({ date, onChange }: { date: string; onChange: (date: string) => void }) {
-  const input = useRef<HTMLInputElement>(null);
+/** The date as an italic heading; tapping it opens a calendar under it. */
+function DateHeading({ date, today, onChange }: { date: string; today: string; onChange: (date: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const close = useCallback(() => setOpen(false), []);
   return (
     <div className="relative mt-6 self-start">
       <button
         type="button"
-        onClick={() => {
-          const el = input.current;
-          if (!el) return;
-          try {
-            el.showPicker();
-          } catch {
-            // Browsers without showPicker (older Safari) still open the picker on focus and click.
-            el.focus();
-            el.click();
-          }
-        }}
-        className="rounded-lg font-serif text-[26px] italic underline-offset-4 decoration-line hover:underline"
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        disabled={!date}
+        className={`rounded-lg font-serif text-[26px] italic underline-offset-4 decoration-line hover:underline ${open ? "underline" : ""}`}
       >
         {date ? longDate(date) : " "}
       </button>
-      <input
-        ref={input}
-        type="date"
-        aria-label="Date"
-        value={date}
-        max="9999-12-31"
-        onChange={(e) => e.target.value && onChange(e.target.value)}
-        className="pointer-events-none absolute inset-0 opacity-0"
-        tabIndex={-1}
-      />
+      {open && (
+        <DatePicker
+          date={date}
+          today={today}
+          onClose={close}
+          onPick={(d) => {
+            onChange(d);
+            close();
+          }}
+        />
+      )}
     </div>
   );
 }

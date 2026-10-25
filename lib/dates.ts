@@ -21,3 +21,19 @@ export function localToday() {
   const now = new Date();
   return new Date(now.getTime() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
 }
+
+/** The calendar for the month holding `date`: blank cells before the 1st (weeks start Sunday), then every day. */
+export function monthGrid(date: string) {
+  const first = day(`${date.slice(0, 7)}-01`);
+  const blanks = first.getUTCDay();
+  const count = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + 1, 0)).getUTCDate();
+  const days = Array.from({ length: count }, (_, i) => `${date.slice(0, 8)}${String(i + 1).padStart(2, "0")}`);
+  return { blanks, days };
+}
+
+/** The 1st of the month `months` away from `date`'s month. */
+export function shiftMonth(date: string, months: number) {
+  const d = day(`${date.slice(0, 7)}-01`);
+  d.setUTCMonth(d.getUTCMonth() + months);
+  return d.toISOString().slice(0, 10);
+}
