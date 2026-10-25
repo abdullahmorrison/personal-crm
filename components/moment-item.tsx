@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Faces } from "@/components/faces";
+import { MomentBody } from "@/components/moment-body";
 import { shortDate } from "@/lib/dates";
 import type { Moment } from "@/lib/moments";
 import { firstName } from "@/lib/names";
@@ -20,7 +21,7 @@ export function MomentItem({ moment, about, href = `/journal/${moment.id}/edit` 
           <span>{shortDate(moment.date)}</span>
           {others.length > 0 && <span>with {others.map((p) => firstName(p.name)).join(", ")}</span>}
         </span>
-        <span className="font-serif text-[17px] leading-[29px] whitespace-pre-line">{moment.body}</span>
+        <span className="font-serif text-[17px] leading-[29px] whitespace-pre-line"><MomentBody body={moment.body} people={moment.mentioned} /></span>
       </Link>
     );
   }
@@ -33,7 +34,7 @@ export function MomentItem({ moment, about, href = `/journal/${moment.id}/edit` 
           {moment.people.length ? moment.people.map((p) => firstName(p.name)).join(", ") : "Just me"}
         </span>
       </span>
-      <span className="font-serif text-lg leading-[29px] whitespace-pre-line">{moment.body}</span>
+      <span className="font-serif text-lg leading-[29px] whitespace-pre-line"><MomentBody body={moment.body} people={moment.mentioned} /></span>
     </Link>
   );
 }

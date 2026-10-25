@@ -5,7 +5,10 @@ import Link from "next/link";
 import { useActionState, useCallback, useRef, useState, useSyncExternalStore } from "react";
 import type { MomentFormState } from "@/app/(app)/journal/actions";
 import { DatePicker } from "@/components/date-picker";
+import { MomentEditor } from "@/components/moment-editor";
 import { localToday, longDate } from "@/lib/dates";
+import { linkedAfterHandEdit, mentionedIds, syncWith } from "@/lib/mentions";
+import { firstName } from "@/lib/names";
 import { personColor } from "@/lib/person-colors";
 
 type Person = { id: number; name: string; color: number };
@@ -13,7 +16,7 @@ type Person = { id: number; name: string; color: number };
 type Props = {
   action: (prev: MomentFormState, form: FormData) => Promise<MomentFormState>;
   people: Person[];
-  defaults?: { body: string; date: string; personIds: number[] };
+  defaults?: { body: string; date: string; personIds: number[]; viaMention: number[] };
   closeHref: string;
 };
 
@@ -25,7 +28,9 @@ export function MomentForm({ action, people, defaults, closeHref }: Props) {
   const today = useSyncExternalStore(noSubscribe, localToday, () => "");
   const [picked, setPicked] = useState<string | null>(defaults?.date ?? null);
   const date = picked ?? today;
-  const [chosen, setChosen] = useState<number[]>(defaults?.personIds ?? []);
+  // Who was there, and which of them a mention put there (so removing the mention removes them).
+  const [withState, setWith] = useState({ chosen: defaults?.personIds ?? [], linked: defaults?.viaMention ?? [] });
+  const { chosen } = withState;
 
   return (
     <form action={formAction} className="flex flex-col">
@@ -41,18 +46,26 @@ export function MomentForm({ action, people, defaults, closeHref }: Props) {
       <DateHeading date={date} today={today} onChange={setPicked} />
       <input type="hidden" name="date" value={date} />
 
-      <WithPeople people={people} chosen={chosen} onChange={setChosen} />
+      <WithPeople
+        people={people}
+        chosen={chosen}
+        linked={withState.linked}
+        onChange={(ids) => setWith((w) => ({ chosen: ids, linked: linkedAfterHandEdit(w.linked, w.chosen, ids) }))}
+        onLock={(id) => setWith((w) => ({ ...w, linked: w.linked.filter((x) => x !== id) }))}
+      />
       {chosen.map((id) => (
         <input key={id} type="hidden" name="personIds" value={id} />
       ))}
+      {withState.linked.map((id) => (
+        <input key={id} type="hidden" name="viaMention" value={id} />
+      ))}
 
-      <textarea
-        name="body"
-        required
-        autoFocus={!defaults}
+      <MomentEditor
+        people={people}
         defaultValue={defaults?.body}
-        placeholder="What happened?"
-        className="mt-7 min-h-48 resize-none bg-transparent font-serif text-[19px] leading-8 outline-none field-sizing-content placeholder:text-muted/60"
+        autoFocus={!defaults}
+        onMention={(p) => setWith((w) => (w.chosen.includes(p.id) ? w : { chosen: [...w.chosen, p.id], linked: [...w.linked, p.id] }))}
+        onChange={(body) => setWith((w) => ({ ...w, chosen: syncWith(w.chosen, w.linked, mentionedIds(body)) }))}
       />
 
       {state.error && (
@@ -100,8 +113,23 @@ function DateHeading({ date, today, onChange }: { date: string; today: string; o
   );
 }
 
-/** "with Sam Priya + someone": chips for who was there, and a search to add more. */
-function WithPeople({ people, chosen, onChange }: { people: Person[]; chosen: number[]; onChange: (ids: number[]) => void }) {
+/**
+ * "with Sam Priya + someone": chips for who was there, and a search to add more. Someone there only
+ * because of a mention (`linked`) is dashed, and tapping locks them in; tapping anyone else removes them.
+ */
+function WithPeople({
+  people,
+  chosen,
+  linked,
+  onChange,
+  onLock,
+}: {
+  people: Person[];
+  chosen: number[];
+  linked: number[];
+  onChange: (ids: number[]) => void;
+  onLock: (id: number) => void;
+}) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const byId = new Map(people.map((p) => [p.id, p]));
@@ -121,13 +149,28 @@ function WithPeople({ people, chosen, onChange }: { people: Person[]; chosen: nu
         const p = byId.get(id);
         if (!p) return null;
         const c = personColor(p.color);
+        if (linked.includes(id)) {
+          const label = `Keep ${firstName(p.name)} in this moment`;
+          return (
+            <button
+              key={id}
+              type="button"
+              onClick={() => onLock(id)}
+              aria-label={label}
+              title={label}
+              className={`rounded-full border border-dashed border-current/45 px-2.5 py-px font-medium transition-colors ${c.ink} ${c.hover}`}
+            >
+              {p.name}
+            </button>
+          );
+        }
         return (
           <button
             key={id}
             type="button"
             onClick={() => onChange(chosen.filter((x) => x !== id))}
             aria-label={`Remove ${p.name}`}
-            className={`group flex items-center gap-1 rounded-full px-2.5 py-0.5 font-medium ${c.fill} ${c.ink}`}
+            className={`group flex items-center gap-1 rounded-full px-2.5 py-0.5 font-medium transition-[filter] hover:brightness-95 ${c.fill} ${c.ink}`}
           >
             {p.name}
             <X size={12} className="opacity-50 group-hover:opacity-100" />

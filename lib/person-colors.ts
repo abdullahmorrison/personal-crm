@@ -1,11 +1,11 @@
 // Order matters: new people take the least-used color, earliest in this list on ties.
 export const PERSON_COLORS = [
-  { name: "clay", fill: "bg-clay", ink: "text-clay-ink" },
-  { name: "sand", fill: "bg-sand", ink: "text-sand-ink" },
-  { name: "sage", fill: "bg-sage", ink: "text-sage-ink" },
-  { name: "sky", fill: "bg-sky", ink: "text-sky-ink" },
-  { name: "lilac", fill: "bg-lilac", ink: "text-lilac-ink" },
-  { name: "rose", fill: "bg-rose", ink: "text-rose-ink" },
+  { name: "clay", fill: "bg-clay", ink: "text-clay-ink", hover: "hover:bg-clay" },
+  { name: "sand", fill: "bg-sand", ink: "text-sand-ink", hover: "hover:bg-sand" },
+  { name: "sage", fill: "bg-sage", ink: "text-sage-ink", hover: "hover:bg-sage" },
+  { name: "sky", fill: "bg-sky", ink: "text-sky-ink", hover: "hover:bg-sky" },
+  { name: "lilac", fill: "bg-lilac", ink: "text-lilac-ink", hover: "hover:bg-lilac" },
+  { name: "rose", fill: "bg-rose", ink: "text-rose-ink", hover: "hover:bg-rose" },
 ] as const;
 
 export function personColor(index: number) {

@@ -18,7 +18,12 @@ async function Edit({ params }: { params: Promise<{ id: string }> }) {
         action={editMoment.bind(null, moment.id, "/journal")}
         people={people}
         closeHref="/journal"
-        defaults={{ body: moment.body, date: moment.date, personIds: moment.people.map((p) => p.id) }}
+        defaults={{
+          body: moment.body,
+          date: moment.date,
+          personIds: moment.people.map((p) => p.id),
+          viaMention: moment.people.filter((p) => p.viaMention).map((p) => p.id),
+        }}
       />
       <div className="mt-14 border-t border-line pt-6">
         <ConfirmDelete label="Delete this moment" warning="Delete this moment? This can't be undone." action={removeMoment.bind(null, moment.id, "/journal")} />
