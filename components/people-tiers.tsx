@@ -2,13 +2,20 @@
 
 import { Plus } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { firstName, initials } from "@/lib/names";
 import { personColor } from "@/lib/person-colors";
 import { layoutTiers, type LayoutPerson } from "@/lib/tier-layout";
 import { TIERS } from "@/lib/tiers";
 
-const BAND_FILLS = ["bg-band-1", "bg-band-2", "bg-band-3", "bg-band-4"];
+// Everything is placed with transforms, which the browser can move without redoing layout.
+// When the side panel opens or closes, the arcs snap to their new size with no animation.
+const at = (x: number, y: number) => `translate3d(${x}px, ${y}px, 0)`;
+// Bubbles pop in one after another, capped so a bubble that appears later (say, an overflow
+// bubble when the panel narrows the arcs) never waits long to show.
+const stagger = (i: number) => Math.min(i * 25, 250);
+const BAND_FILLS = ["fill-band-1", "fill-band-2", "fill-band-3", "fill-band-4"];
 const DESK_QUERY = "(min-width: 1024px)"; // matches the `desk` breakpoint in globals.css
 
 function useIsDesk() {
@@ -30,12 +37,18 @@ export function PeopleTiers({ people }: { people: LayoutPerson[] }) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const observer = new ResizeObserver(([entry]) => setSize({ width: entry.contentRect.width, height: entry.contentRect.height }));
+    const observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      // Next.js keeps this screen mounted but hidden (0×0) while you're on another tab. Keep the
+      // last real layout, or the arcs would glide in from a collapsed one when you come back.
+      if (width > 0 && height > 0) setSize({ width, height });
+    });
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
 
   const desk = useIsDesk();
+  const selectedId = Number(usePathname().match(/^\/people\/(\d+)/)?.[1]);
   const layout = size && layoutTiers(people, { ...size, tiers: TIERS, top: desk ? 110 : 96, bottom: desk ? 40 : 150 });
 
   return (
@@ -48,17 +61,17 @@ export function PeopleTiers({ people }: { people: LayoutPerson[] }) {
               cx={layout.center.x}
               cy={layout.center.y}
               r={band.outerRadius}
-              className={`${BAND_FILLS[Math.min(layout.bands.length - 1 - i, BAND_FILLS.length - 1)]} border border-line`}
+              className={`${BAND_FILLS[Math.min(layout.bands.length - 1 - i, BAND_FILLS.length - 1)]} stroke-line`}
             />
           ))}
           {/* The closest tier also fills everything below its arc. */}
-          <Circle cx={layout.center.x} cy={layout.center.y} r={layout.innerRadius} className="bg-band-1" />
+          <Circle cx={layout.center.x} cy={layout.center.y} r={layout.innerRadius} className="fill-band-1" />
 
           {layout.bands.map((band) => (
             <p
               key={band.tier}
-              style={{ top: band.labelY }}
-              className="absolute inset-x-0 text-center text-[10px] font-medium tracking-[0.14em] text-muted uppercase"
+              style={{ transform: `${at(layout.center.x, band.labelY)} translateX(-50%)` }}
+              className={`absolute top-0 left-0 whitespace-nowrap text-[10px] font-medium tracking-[0.14em] text-muted uppercase`}
             >
               {band.label} · {band.count}
             </p>
@@ -66,20 +79,22 @@ export function PeopleTiers({ people }: { people: LayoutPerson[] }) {
 
           {layout.bubbles.map((b, i) =>
             b.kind === "person" ? (
-              <PersonBubble key={b.person.id} person={b.person} x={b.x} y={b.y} size={b.size} delay={i * 25} />
+              <PersonBubble key={b.person.id} person={b.person} x={b.x} y={b.y} size={b.size} delay={stagger(i)} selected={b.person.id === selectedId} />
             ) : (
               <div
                 key={`more-${b.tier}`}
-                style={{ left: b.x - b.size / 2, top: b.y - b.size / 2, width: b.size, animationDelay: `${i * 25}ms` }}
-                className="absolute flex flex-col items-center gap-1.5 motion-safe:animate-pop-in"
+                style={{ transform: at(b.x - b.size / 2, b.y - b.size / 2), width: b.size }}
+                className={`absolute top-0 left-0`}
               >
-                <span
-                  style={{ width: b.size, height: b.size }}
-                  className="flex items-center justify-center rounded-full border border-dashed border-muted text-sm font-medium"
-                >
-                  +{b.hidden}
-                </span>
-                <span className="text-[11px] text-muted">more</span>
+                <div style={{ animationDelay: `${stagger(i)}ms` }} className="flex flex-col items-center gap-1.5 motion-safe:animate-pop-in">
+                  <span
+                    style={{ width: b.size, height: b.size }}
+                    className="flex items-center justify-center rounded-full border border-dashed border-muted text-sm font-medium"
+                  >
+                    +{b.hidden}
+                  </span>
+                  <span className="text-[11px] text-muted">more</span>
+                </div>
               </div>
             ),
           )}
@@ -124,27 +139,46 @@ function EmptyPrompt({ bands }: { bands: { labelY: number }[] }) {
   );
 }
 
+// Circles are drawn once at this radius and scaled into place, so resizing them is a transform.
+// The stroke doesn't scale, so the edge line stays 1px at any size.
+const UNIT = 1000;
+
 function Circle({ cx, cy, r, className }: { cx: number; cy: number; r: number; className: string }) {
-  return <div style={{ left: cx - r, top: cy - r, width: r * 2, height: r * 2 }} className={`absolute rounded-full ${className}`} />;
+  return (
+    <svg
+      width={UNIT * 2}
+      height={UNIT * 2}
+      aria-hidden
+      style={{ transform: `${at(cx - UNIT, cy - UNIT)} scale(${r / UNIT})` }}
+      className={`absolute top-0 left-0 overflow-visible`}
+    >
+      <circle cx={UNIT} cy={UNIT} r={UNIT} className={className} vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
 }
 
-function PersonBubble({ person, x, y, size, delay }: { person: LayoutPerson; x: number; y: number; size: number; delay: number }) {
+type BubbleProps = { person: LayoutPerson; x: number; y: number; size: number; delay: number; selected: boolean };
+
+function PersonBubble({ person, x, y, size, delay, selected }: BubbleProps) {
   const color = personColor(person.color);
   return (
     <Link
       href={`/people/${person.id}`}
-      style={{ left: x - size / 2 - 20, top: y - size / 2, width: size + 40, animationDelay: `${delay}ms` }}
-      className="group absolute flex flex-col items-center gap-1.5 rounded-lg outline-none motion-safe:animate-pop-in"
+      style={{ transform: at(x - size / 2 - 20, y - size / 2), width: size + 40 }}
+      className={`group absolute top-0 left-0 rounded-lg outline-none`}
     >
-      <span
-        style={{ width: size, height: size, fontSize: Math.round(size * 0.34) }}
-        className={`flex items-center justify-center rounded-full font-serif shadow-[0_2px_6px_rgba(90,74,58,0.10)] ring-2 ring-white/90 transition group-hover:shadow-[0_6px_14px_rgba(90,74,58,0.18)] group-focus-visible:ring-ink group-active:scale-95 motion-safe:group-hover:-translate-y-0.5 ${color.fill} ${color.ink}`}
-      >
-        {initials(person.name)}
-      </span>
-      <span className={`max-w-full truncate text-xs ${person.closeness === TIERS[TIERS.length - 1].value ? "text-muted" : ""}`}>
-        {firstName(person.name)}
-      </span>
+      {/* The entrance animation lives on an inner element so it doesn't fight the glide. */}
+      <div style={{ animationDelay: `${delay}ms` }} className="flex flex-col items-center gap-1.5 motion-safe:animate-pop-in">
+        <span
+          style={{ width: size, height: size, fontSize: Math.round(size * 0.34) }}
+          className={`flex items-center justify-center rounded-full font-serif shadow-[0_2px_6px_rgba(90,74,58,0.10)] ${selected ? "ring-[2.5px] ring-accent" : "ring-2 ring-white/90"} transition group-hover:shadow-[0_6px_14px_rgba(90,74,58,0.18)] group-focus-visible:ring-ink group-active:scale-95 motion-safe:group-hover:-translate-y-0.5 ${color.fill} ${color.ink}`}
+        >
+          {initials(person.name)}
+        </span>
+        <span className={`max-w-full truncate text-xs ${selected ? "font-medium" : person.closeness === TIERS[TIERS.length - 1].value ? "text-muted" : ""}`}>
+          {firstName(person.name)}
+        </span>
+      </div>
     </Link>
   );
 }

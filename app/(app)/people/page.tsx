@@ -1,18 +1,13 @@
-import { connection } from "next/server";
 import { Suspense } from "react";
-import { PeopleTiers } from "@/components/people-tiers";
-import { getDb } from "@/lib/db";
-import { listPeople } from "@/lib/people";
+import { Tiers } from "./tiers";
 
-async function People() {
-  await connection(); // read the database per request, not at build time
-  return <PeopleTiers people={listPeople(getDb())} />;
-}
-
+// Phones only: on desktop the layout already shows the arcs.
 export default function PeoplePage() {
   return (
-    <Suspense>
-      <People />
-    </Suspense>
+    <div className="desk:hidden">
+      <Suspense>
+        <Tiers />
+      </Suspense>
+    </div>
   );
 }
