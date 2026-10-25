@@ -41,7 +41,7 @@ export function LogButton({ className = "" }: { className?: string }) {
 }
 
 // Form screens have their own submit button, so the floating one would compete with it.
-const FORM_ROUTES = [/^\/write$/, /^\/people\/new$/, /^\/people\/\d+\/edit$/];
+const FORM_ROUTES = [/^\/write$/, /^\/journal\/\d+\/edit$/, /^\/people\/new$/, /^\/people\/\d+\/edit$/];
 
 /** Phones: floating Log a moment button above the tab bar, hidden on form screens. */
 export function FloatingLogButton() {
