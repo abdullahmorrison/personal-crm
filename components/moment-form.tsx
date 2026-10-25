@@ -22,7 +22,7 @@ type Props = {
 
 const noSubscribe = () => () => {};
 
-export function MomentForm({ action, people: initialPeople, defaults, closeHref }: Props) {
+export function MomentForm({ action, people, defaults, closeHref }: Props) {
   const [state, formAction, pending] = useActionState(action, {});
   // Today comes from the viewer's clock, so it's read in the browser, never at build time.
   const today = useSyncExternalStore(noSubscribe, localToday, () => "");
@@ -34,8 +34,6 @@ export function MomentForm({ action, people: initialPeople, defaults, closeHref 
     return { chosen, linked: mentionedIds(defaults?.body ?? "").filter((id) => chosen.includes(id)) };
   });
   const { chosen } = withState;
-  // Grows when someone new is added while mentioning.
-  const [people, setPeople] = useState(initialPeople);
 
   return (
     <form action={formAction} className="flex flex-col">
@@ -66,10 +64,7 @@ export function MomentForm({ action, people: initialPeople, defaults, closeHref 
         people={people}
         defaultValue={defaults?.body}
         autoFocus={!defaults}
-        onMention={(p) => {
-          setPeople((all) => (all.some((x) => x.id === p.id) ? all : [...all, p]));
-          setWith((w) => (w.chosen.includes(p.id) ? w : { chosen: [...w.chosen, p.id], linked: [...w.linked, p.id] }));
-        }}
+        onMention={(p) => setWith((w) => (w.chosen.includes(p.id) ? w : { chosen: [...w.chosen, p.id], linked: [...w.linked, p.id] }))}
         onChange={(body) => setWith((w) => ({ ...w, chosen: syncWith(w.chosen, w.linked, mentionedIds(body)) }))}
       />
 

@@ -8,30 +8,25 @@ import { Placeholder, UndoRedo } from "@tiptap/extensions";
 import { EditorContent, useEditor } from "@tiptap/react";
 import type { SuggestionKeyDownProps, SuggestionProps } from "@tiptap/suggestion";
 import { useLayoutEffect, useRef, useState } from "react";
-import { quickAddPerson } from "@/app/(app)/people/actions";
 import { fromDoc, toDoc } from "@/lib/mentions";
 import { firstName } from "@/lib/names";
 import { personColor } from "@/lib/person-colors";
 
 type Person = { id: number; name: string; color: number };
-// What the mention menu offers: someone who matches, or adding the typed name as someone new.
-type Option = { person: Person } | { create: string };
 
 const MATCHES = 3;
 
 /** People whose first or last name starts with what was typed after @, closest first. */
-function options(people: Person[], query: string): Option[] {
+function matches(people: Person[], query: string) {
   const q = query.toLowerCase();
-  const found = people.filter((p) => p.name.toLowerCase().split(/\s+/).some((w) => w.startsWith(q))).slice(0, MATCHES);
-  const exact = people.some((p) => p.name.toLowerCase() === q || firstName(p.name).toLowerCase() === q);
-  return [...found.map((person) => ({ person })), ...(q && !exact ? [{ create: query }] : [])];
+  return people.filter((p) => p.name.toLowerCase().split(/\s+/).some((w) => w.startsWith(q))).slice(0, MATCHES);
 }
 
 type Props = {
   people: Person[];
   defaultValue?: string;
   autoFocus?: boolean;
-  /** Someone was mentioned, or added from the menu: they belong in "with". */
+  /** Someone was mentioned: they belong in "with". */
   onMention: (person: Person) => void;
   /** The body changed, so mentions may have come or gone. */
   onChange: (body: string) => void;
@@ -43,8 +38,7 @@ type Props = {
  */
 export function MomentEditor({ people, defaultValue = "", autoFocus, onMention, onChange }: Props) {
   const [body, setBody] = useState(defaultValue);
-  const [menu, setMenu] = useState<{ props: SuggestionProps<Option>; selected: number } | null>(null);
-  const [error, setError] = useState("");
+  const [menu, setMenu] = useState<{ props: SuggestionProps<Person>; selected: number } | null>(null);
   const wrap = useRef<HTMLDivElement>(null);
   // The editor is built once, so its callbacks read the latest values through a ref.
   const latest = useRef({ people, onMention, onChange, menu });
@@ -52,20 +46,7 @@ export function MomentEditor({ people, defaultValue = "", autoFocus, onMention, 
     latest.current = { people, onMention, onChange, menu };
   });
 
-  const adding = useRef(false); // "+ New" is saving: ignore repeat picks so no one is added twice
-
-  const pick = async (props: SuggestionProps<Option>, option: Option) => {
-    let person = "person" in option ? option.person : undefined;
-    if (!person) {
-      if (adding.current) return;
-      adding.current = true;
-      const { person: added, error } = await quickAddPerson((option as { create: string }).create).finally(() => (adding.current = false));
-      if (!added) return setError(error ?? "");
-      // Typing went on while saving: only replace the @name if it's still there as it was.
-      if (props.editor.state.doc.textBetween(props.range.from, props.range.to) !== props.text) return;
-      person = added;
-    }
-    setError("");
+  const pick = (props: SuggestionProps<Person>, person: Person) => {
     props.command({ id: String(person.id), label: person.name });
     latest.current.onMention(person);
   };
@@ -90,7 +71,7 @@ export function MomentEditor({ people, defaultValue = "", autoFocus, onMention, 
         },
         suggestion: {
           decorationClass: "text-accent",
-          items: ({ query }) => options(latest.current.people, query),
+          items: ({ query }) => matches(latest.current.people, query),
           render: () => ({
             onStart: (props) => setMenu({ props, selected: 0 }),
             onUpdate: (props) => setMenu((m) => ({ props, selected: Math.min(m?.selected ?? 0, Math.max(props.items.length - 1, 0)) })),
@@ -132,7 +113,6 @@ export function MomentEditor({ people, defaultValue = "", autoFocus, onMention, 
     <div ref={wrap} className="relative mt-7">
       <EditorContent editor={editor} />
       <input type="hidden" name="body" value={body} />
-      {error && <p className="mt-2 text-sm text-accent">{error}</p>}
       {menu && menu.props.items.length > 0 && <Menu wrap={wrap} props={menu.props} selected={menu.selected} onPick={(o) => pick(menu.props, o)} />}
     </div>
   );
@@ -146,9 +126,9 @@ function Menu({
   onPick,
 }: {
   wrap: React.RefObject<HTMLDivElement | null>;
-  props: SuggestionProps<Option>;
+  props: SuggestionProps<Person>;
   selected: number;
-  onPick: (option: Option) => void;
+  onPick: (person: Person) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [place, setPlace] = useState({ top: 0, left: 0, caret: 0 });
@@ -168,17 +148,17 @@ function Menu({
       <svg width="12" height="6" viewBox="0 0 12 6" aria-hidden className="absolute -top-1.5 fill-ink" style={{ left: place.caret }}>
         <path d="M0 6 6 0l6 6z" />
       </svg>
-      {props.items.map((o, i) => (
+      {props.items.map((p, i) => (
         <button
-          key={"person" in o ? o.person.id : "new"}
+          key={p.id}
           type="button"
           role="option"
           aria-selected={i === selected}
           onMouseDown={(e) => e.preventDefault()} // keep the caret in the text
-          onClick={() => onPick(o)}
-          className={`rounded-[7px] px-2.5 py-1 whitespace-nowrap ${i === selected ? "bg-white/15 font-medium" : "hover:bg-white/10"} ${"create" in o ? "text-[#f0a486]" : ""}`}
+          onClick={() => onPick(p)}
+          className={`rounded-[7px] px-2.5 py-1 whitespace-nowrap ${i === selected ? "bg-white/15 font-medium" : "hover:bg-white/10"}`}
         >
-          {"person" in o ? o.person.name : "+ New"}
+          {p.name}
         </button>
       ))}
     </div>
