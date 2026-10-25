@@ -23,7 +23,7 @@ export function AddPersonForm() {
           {TIERS.map((t) => (
             <label key={t.value} className="cursor-pointer">
               <input type="radio" name="closeness" value={t.value} defaultChecked={t.value === NEW_PERSON_CLOSENESS} className="peer sr-only" />
-              <span className="block rounded-full border border-line px-4 py-2 text-sm text-muted peer-checked:border-ink peer-checked:bg-ink peer-checked:text-paper">
+              <span className="block rounded-full border border-line px-4 py-2 text-sm text-muted transition-colors hover:border-muted hover:text-ink peer-checked:border-ink peer-checked:bg-ink peer-checked:text-paper peer-focus-visible:ring-2 peer-focus-visible:ring-ink peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-paper">
                 {t.label}
               </span>
             </label>
@@ -43,7 +43,7 @@ export function AddPersonForm() {
 
       {state.error && <p className="text-sm text-accent" aria-live="polite">{state.error}</p>}
 
-      <button disabled={pending} className="self-start rounded-full bg-accent px-6 py-3 text-sm font-medium text-paper disabled:opacity-60">
+      <button disabled={pending} className="self-start rounded-full bg-accent px-6 py-3 text-sm font-medium text-paper transition hover:brightness-110 active:scale-[0.98] disabled:opacity-60">
         {pending ? "Adding…" : "Add person"}
       </button>
     </form>

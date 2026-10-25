@@ -2,14 +2,26 @@
 
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { firstName, initials } from "@/lib/names";
 import { personColor } from "@/lib/person-colors";
 import { layoutTiers, type LayoutPerson } from "@/lib/tier-layout";
 import { TIERS } from "@/lib/tiers";
 
 const BAND_FILLS = ["bg-band-1", "bg-band-2", "bg-band-3", "bg-band-4"];
-const DESK = 1024;
+const DESK_QUERY = "(min-width: 1024px)"; // matches the `desk` breakpoint in globals.css
+
+function useIsDesk() {
+  return useSyncExternalStore(
+    (onChange) => {
+      const mq = window.matchMedia(DESK_QUERY);
+      mq.addEventListener("change", onChange);
+      return () => mq.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia(DESK_QUERY).matches,
+    () => false,
+  );
+}
 
 export function PeopleTiers({ people }: { people: LayoutPerson[] }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -23,11 +35,11 @@ export function PeopleTiers({ people }: { people: LayoutPerson[] }) {
     return () => observer.disconnect();
   }, []);
 
-  const desk = (size?.width ?? 0) >= DESK - 240; // the sidebar takes 240px on desktop
+  const desk = useIsDesk();
   const layout = size && layoutTiers(people, { ...size, tiers: TIERS, top: desk ? 110 : 96, bottom: desk ? 40 : 150 });
 
   return (
-    <div ref={ref} className="relative h-dvh overflow-hidden">
+    <div ref={ref} className="relative -mb-28 h-dvh overflow-hidden desk:mb-0">
       {layout && (
         <>
           {[...layout.bands].reverse().map((band, i) => (
@@ -52,14 +64,14 @@ export function PeopleTiers({ people }: { people: LayoutPerson[] }) {
             </p>
           ))}
 
-          {layout.bubbles.map((b) =>
+          {layout.bubbles.map((b, i) =>
             b.kind === "person" ? (
-              <PersonBubble key={b.person.id} person={b.person} x={b.x} y={b.y} size={b.size} />
+              <PersonBubble key={b.person.id} person={b.person} x={b.x} y={b.y} size={b.size} delay={i * 25} />
             ) : (
               <div
                 key={`more-${b.tier}`}
-                style={{ left: b.x - b.size / 2, top: b.y - b.size / 2, width: b.size }}
-                className="absolute flex flex-col items-center gap-1.5"
+                style={{ left: b.x - b.size / 2, top: b.y - b.size / 2, width: b.size, animationDelay: `${i * 25}ms` }}
+                className="absolute flex flex-col items-center gap-1.5 motion-safe:animate-pop-in"
               >
                 <span
                   style={{ width: b.size, height: b.size }}
@@ -84,7 +96,7 @@ export function PeopleTiers({ people }: { people: LayoutPerson[] }) {
         <Link
           href="/people/new"
           aria-label="Add person"
-          className="flex items-center gap-1.5 rounded-full border border-line bg-paper p-2.5 text-sm font-medium desk:px-4 desk:py-2"
+          className="flex items-center gap-1.5 rounded-full border border-line bg-paper p-2.5 text-sm font-medium transition-colors hover:border-muted hover:bg-surface desk:px-4 desk:py-2"
         >
           <Plus size={18} />
           <span className="hidden desk:inline">Add person</span>
@@ -105,7 +117,7 @@ function EmptyPrompt({ bands }: { bands: { labelY: number }[] }) {
     <div style={{ top, height: bottom - top }} className="absolute inset-x-0 flex flex-col items-center justify-center gap-1.5 px-8 text-center">
       <p className="font-serif text-[22px]">No one here yet.</p>
       <p className="text-[13px] text-muted">Add the people in your life, closest at the bottom.</p>
-      <Link href="/people/new" className="mt-1 text-[13px] font-medium text-accent">
+      <Link href="/people/new" className="mt-1 text-[13px] font-medium text-accent underline-offset-4 hover:underline">
         Add your first person
       </Link>
     </div>
@@ -116,10 +128,13 @@ function Circle({ cx, cy, r, className }: { cx: number; cy: number; r: number; c
   return <div style={{ left: cx - r, top: cy - r, width: r * 2, height: r * 2 }} className={`absolute rounded-full ${className}`} />;
 }
 
-function PersonBubble({ person, x, y, size }: { person: LayoutPerson; x: number; y: number; size: number }) {
+function PersonBubble({ person, x, y, size, delay }: { person: LayoutPerson; x: number; y: number; size: number; delay: number }) {
   const color = personColor(person.color);
   return (
-    <div style={{ left: x - size / 2 - 20, top: y - size / 2, width: size + 40 }} className="absolute flex flex-col items-center gap-1.5">
+    <div
+      style={{ left: x - size / 2 - 20, top: y - size / 2, width: size + 40, animationDelay: `${delay}ms` }}
+      className="absolute flex flex-col items-center gap-1.5 motion-safe:animate-pop-in"
+    >
       <span
         style={{ width: size, height: size, fontSize: Math.round(size * 0.34) }}
         className={`flex items-center justify-center rounded-full font-serif shadow-[0_2px_6px_rgba(90,74,58,0.10)] ring-2 ring-white/90 ${color.fill} ${color.ink}`}
