@@ -9,7 +9,7 @@ export type MomentFormState = { error?: string };
 
 function read(form: FormData) {
   return {
-    body: String(form.get("body") ?? ""),
+    body: String(form.get("body") ?? "").replace(/\r\n?/g, "\n"), // forms send line breaks as \r\n
     date: String(form.get("date") ?? ""),
     personIds: form.getAll("personIds").map(Number),
   };

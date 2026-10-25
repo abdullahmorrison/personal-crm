@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useActionState, useCallback, useRef, useState, useSyncExternalStore } from "react";
 import type { MomentFormState } from "@/app/(app)/journal/actions";
 import { DatePicker } from "@/components/date-picker";
+import { MomentEditor } from "@/components/moment-editor";
 import { localToday, longDate } from "@/lib/dates";
 import { personColor } from "@/lib/person-colors";
 
@@ -19,13 +20,15 @@ type Props = {
 
 const noSubscribe = () => () => {};
 
-export function MomentForm({ action, people, defaults, closeHref }: Props) {
+export function MomentForm({ action, people: initialPeople, defaults, closeHref }: Props) {
   const [state, formAction, pending] = useActionState(action, {});
   // Today comes from the viewer's clock, so it's read in the browser, never at build time.
   const today = useSyncExternalStore(noSubscribe, localToday, () => "");
   const [picked, setPicked] = useState<string | null>(defaults?.date ?? null);
   const date = picked ?? today;
   const [chosen, setChosen] = useState<number[]>(defaults?.personIds ?? []);
+  // Grows when someone new is added while mentioning.
+  const [people, setPeople] = useState(initialPeople);
 
   return (
     <form action={formAction} className="flex flex-col">
@@ -46,13 +49,14 @@ export function MomentForm({ action, people, defaults, closeHref }: Props) {
         <input key={id} type="hidden" name="personIds" value={id} />
       ))}
 
-      <textarea
-        name="body"
-        required
-        autoFocus={!defaults}
+      <MomentEditor
+        people={people}
         defaultValue={defaults?.body}
-        placeholder="What happened?"
-        className="mt-7 min-h-48 resize-none bg-transparent font-serif text-[19px] leading-8 outline-none field-sizing-content placeholder:text-muted/60"
+        autoFocus={!defaults}
+        onMention={(p) => {
+          setPeople((all) => (all.some((x) => x.id === p.id) ? all : [...all, p]));
+          setChosen((ids) => (ids.includes(p.id) ? ids : [...ids, p.id]));
+        }}
       />
 
       {state.error && (

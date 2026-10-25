@@ -59,3 +59,14 @@ export async function movePerson(id: number, closeness: number): Promise<PersonF
   revalidatePath("/people", "layout");
   return {};
 }
+
+/** "+ New" while mentioning: adds someone by name to the outer tier and stays on the page. */
+export async function quickAddPerson(name: string): Promise<{ person?: { id: number; name: string; color: number }; error?: string }> {
+  try {
+    const { id, name: saved, color } = createPerson(getDb(), { name });
+    revalidatePath("/people", "layout");
+    return { person: { id, name: saved, color } };
+  } catch (e) {
+    return { error: message(e) };
+  }
+}
