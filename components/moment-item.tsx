@@ -8,13 +8,14 @@ const ITEM = "-mx-3 flex flex-col gap-2 rounded-xl px-3 py-2.5 transition-colors
 
 /**
  * One moment in a list: who and when, then what happened. Tapping opens it for editing.
- * On a person's own pages (`about` is their id), it leaves them out and names only who else was there.
+ * On a person's own pages (`about` is their id), it leaves them out and names only who else was there,
+ * and `href` opens it in their panel instead of the journal.
  */
-export function MomentItem({ moment, about }: { moment: Moment; about?: number }) {
+export function MomentItem({ moment, about, href = `/journal/${moment.id}/edit` }: { moment: Moment; about?: number; href?: string }) {
   if (about !== undefined) {
     const others = moment.people.filter((p) => p.id !== about);
     return (
-      <Link href={`/journal/${moment.id}/edit`} className={ITEM}>
+      <Link href={href} className={ITEM}>
         <span className="flex gap-2 text-xs text-muted">
           <span>{shortDate(moment.date)}</span>
           {others.length > 0 && <span>with {others.map((p) => firstName(p.name)).join(", ")}</span>}
@@ -24,7 +25,7 @@ export function MomentItem({ moment, about }: { moment: Moment; about?: number }
     );
   }
   return (
-    <Link href={`/journal/${moment.id}/edit`} className={ITEM}>
+    <Link href={href} className={ITEM}>
       <span className="flex items-center gap-2 text-xs">
         <Faces people={moment.people} />
         <span className="text-muted">{shortDate(moment.date)}</span>

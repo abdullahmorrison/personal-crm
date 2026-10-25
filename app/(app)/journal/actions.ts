@@ -15,9 +15,11 @@ function read(form: FormData) {
   };
 }
 
-function done(): never {
+// back is where the form was opened from, so saving returns there: the journal, or a person's page.
+function done(back = "/journal"): never {
   revalidatePath("/journal");
-  redirect("/journal");
+  if (back !== "/journal") revalidatePath(back);
+  redirect(back);
 }
 
 function message(e: unknown) {
@@ -33,16 +35,16 @@ export async function addMoment(_prev: MomentFormState, form: FormData): Promise
   done();
 }
 
-export async function editMoment(id: number, _prev: MomentFormState, form: FormData): Promise<MomentFormState> {
+export async function editMoment(id: number, back: string, _prev: MomentFormState, form: FormData): Promise<MomentFormState> {
   try {
     updateMoment(getDb(), id, read(form));
   } catch (e) {
     return { error: message(e) };
   }
-  done();
+  done(back);
 }
 
-export async function removeMoment(id: number) {
+export async function removeMoment(id: number, back: string) {
   deleteMoment(getDb(), id);
-  done();
+  done(back);
 }

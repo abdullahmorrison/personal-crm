@@ -61,7 +61,7 @@ async function Profile({ params }: { params: Promise<{ id: string }> }) {
         {moments.length ? (
           <div className="flex flex-col gap-1">
             {moments.slice(0, LATEST).map((m) => (
-              <MomentItem key={m.id} moment={m} about={person.id} />
+              <MomentItem key={m.id} moment={m} about={person.id} href={`/people/${person.id}/moments/${m.id}`} />
             ))}
           </div>
         ) : (
