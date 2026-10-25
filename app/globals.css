@@ -25,6 +25,9 @@
 
   --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-newsreader), ui-serif, Georgia, serif;
+
+  /* Sidebar layout from this width up; tab bar below it. */
+  --breakpoint-desk: 1024px;
 }
 
 body {
