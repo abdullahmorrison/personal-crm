@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { integer, primaryKey, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, primaryKey, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 // user_id stays empty until there are accounts; it saves a data migration when the app goes public.
 const createdAt = () => text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`);
@@ -29,7 +29,8 @@ export const entryPeople = sqliteTable(
     entryId: integer("entry_id").notNull().references(() => entries.id, { onDelete: "cascade" }),
     personId: integer("person_id").notNull().references(() => people.id, { onDelete: "cascade" }),
   },
-  (t) => [primaryKey({ columns: [t.entryId, t.personId] })],
+  // The primary key covers lookups by entry; the index covers a person's timeline.
+  (t) => [primaryKey({ columns: [t.entryId, t.personId] }), index("entry_people_person_id").on(t.personId)],
 );
 
 export const places = sqliteTable("places", {
@@ -48,5 +49,6 @@ export const personPlaces = sqliteTable(
     personId: integer("person_id").notNull().references(() => people.id, { onDelete: "cascade" }),
     placeId: integer("place_id").notNull().references(() => places.id, { onDelete: "cascade" }),
   },
-  (t) => [primaryKey({ columns: [t.personId, t.placeId] })],
+  // The primary key covers lookups by person; the index covers who goes to a place.
+  (t) => [primaryKey({ columns: [t.personId, t.placeId] }), index("person_places_place_id").on(t.placeId)],
 );

@@ -16,4 +16,15 @@ describe("createPerson", () => {
     expect(p.name).toBe("Noor");
     expect(p.closeness).toBe(NEW_PERSON_CLOSENESS);
   });
+
+  it("rejects a blank name", () => {
+    const db = openDb(":memory:");
+    expect(() => createPerson(db, { name: "   " })).toThrow("needs a name");
+  });
+
+  it("rejects a closeness outside the tiers", () => {
+    const db = openDb(":memory:");
+    expect(() => createPerson(db, { name: "Sam", closeness: 0 })).toThrow("Unknown closeness");
+    expect(() => createPerson(db, { name: "Sam", closeness: 7 })).toThrow("Unknown closeness");
+  });
 });

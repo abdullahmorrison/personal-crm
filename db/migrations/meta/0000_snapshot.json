@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "7124be87-3a11-4c65-b358-f57ed11fe460",
+  "id": "9ae23cc7-f64d-4705-b2fa-85c6b64a877c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "entries": {
@@ -68,7 +68,15 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "entry_people_person_id": {
+          "name": "entry_people_person_id",
+          "columns": [
+            "person_id"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "entry_people_entry_id_entries_id_fk": {
           "name": "entry_people_entry_id_entries_id_fk",
@@ -188,7 +196,15 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "person_places_place_id": {
+          "name": "person_places_place_id",
+          "columns": [
+            "place_id"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "person_places_person_id_people_id_fk": {
           "name": "person_places_person_id_people_id_fk",

@@ -14,6 +14,7 @@ CREATE TABLE `entry_people` (
 	FOREIGN KEY (`person_id`) REFERENCES `people`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
+CREATE INDEX `entry_people_person_id` ON `entry_people` (`person_id`);--> statement-breakpoint
 CREATE TABLE `people` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`user_id` integer,
@@ -32,6 +33,7 @@ CREATE TABLE `person_places` (
 	FOREIGN KEY (`place_id`) REFERENCES `places`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
+CREATE INDEX `person_places_place_id` ON `person_places` (`place_id`);--> statement-breakpoint
 CREATE TABLE `places` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`user_id` integer,
