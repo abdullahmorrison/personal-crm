@@ -62,7 +62,7 @@ export function PersonForm({ action, submitLabel, defaults }: Props) {
 
       <button
         disabled={pending}
-        className="self-start rounded-full bg-accent px-6 py-3 text-sm font-medium text-paper transition hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
+        className="self-start rounded-full bg-accent px-6 py-3 text-sm font-medium text-on-accent transition hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
       >
         {pending ? "Saving…" : submitLabel}
       </button>

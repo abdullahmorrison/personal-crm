@@ -32,7 +32,7 @@ export function LogButton({ className = "" }: { className?: string }) {
   return (
     <Link
       href="/write"
-      className={`flex items-center justify-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-medium text-paper shadow-[0_4px_14px_rgba(122,58,31,0.25)] transition hover:brightness-110 active:scale-[0.98] outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-paper ${className}`}
+      className={`flex items-center justify-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-medium text-on-accent shadow-(--shadow-cta) transition hover:brightness-110 active:scale-[0.98] outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-paper ${className}`}
     >
       <PenLine size={18} />
       Log a moment

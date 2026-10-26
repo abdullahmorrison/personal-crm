@@ -203,7 +203,7 @@ function WithPeople({
       )}
 
       {open && (
-        <ul className="absolute top-full left-0 z-10 mt-2 w-64 overflow-hidden rounded-xl border border-line bg-white py-1 shadow-[0_8px_24px_rgba(90,74,58,0.14)]">
+        <ul className="absolute top-full left-0 z-10 mt-2 w-64 overflow-hidden rounded-xl border border-line bg-raised py-1 shadow-(--shadow-pop)">
           {matches.length === 0 ? (
             <li className="px-3 py-2 text-muted">{people.length ? "No one matches" : "Add people first"}</li>
           ) : (
