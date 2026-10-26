@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, MapPin, PenLine, Users } from "lucide-react";
+import { BookOpen, MapPin, PartyPopper, PenLine, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense } from "react";
@@ -8,6 +8,7 @@ import { Suspense } from "react";
 const TABS = [
   { href: "/people", label: "People", Icon: Users },
   { href: "/journal", label: "Journal", Icon: BookOpen },
+  { href: "/activities", label: "Activities", Icon: PartyPopper },
   { href: "/places", label: "Places", Icon: MapPin },
 ] as const;
 
