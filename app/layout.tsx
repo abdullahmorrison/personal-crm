@@ -7,7 +7,7 @@ const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500"], variable: 
 const newsreader = Newsreader({ subsets: ["latin"], style: ["normal", "italic"], variable: "--font-newsreader" });
 
 export const metadata: Metadata = {
-  title: "Personal CRM",
+  title: "Temory",
   description: "Notable moments with the people in your life",
 };
 

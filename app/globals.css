@@ -113,6 +113,135 @@ body {
   color: color-mix(in srgb, var(--color-muted) 60%, transparent);
 }
 
+/* Temory mark (components/temory-mark.tsx). Bar and thread use pathLength=1, so a dash offset of 1 hides them. */
+.temory-mark .bar {
+  fill: none;
+  stroke: var(--color-ink);
+  stroke-width: 8;
+  stroke-linecap: round;
+}
+.temory-mark .thread {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.temory-mark .knot {
+  fill: var(--color-accent);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.temory-mark .bar,
+.temory-mark .thread {
+  stroke-dasharray: 1 2;
+}
+
+/* Splash: bar, knot, then thread, once. The name rises in after (components/splash.tsx). */
+.temory-mark-splash .bar {
+  animation: temory-draw 0.55s cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+.temory-mark-splash .knot {
+  animation: temory-pop 0.4s cubic-bezier(0.3, 1.6, 0.5, 1) 0.4s both;
+}
+.temory-mark-splash .thread {
+  animation: temory-draw 1.3s cubic-bezier(0.65, 0, 0.35, 1) 0.55s both;
+}
+.temory-splash .temory-mark {
+  animation: temory-lift 0.5s cubic-bezier(0.65, 0, 0.35, 1) 1.8s both;
+}
+.temory-splash-name {
+  animation: temory-rise 0.5s cubic-bezier(0.65, 0, 0.35, 1) 1.9s both;
+}
+
+/* Loader: draw in, hold, pull the thread through, repeat. */
+.temory-mark-loader .bar {
+  animation: temory-loop-bar 2.8s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+.temory-mark-loader .knot {
+  animation: temory-loop-knot 2.8s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+.temory-mark-loader .thread {
+  animation: temory-loop-thread 2.8s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes temory-draw {
+  from {
+    stroke-dashoffset: 1.02;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes temory-pop {
+  from {
+    transform: scale(0);
+  }
+}
+@keyframes temory-lift {
+  from {
+    transform: translateY(18px);
+  }
+}
+@keyframes temory-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes temory-loop-bar {
+  0% {
+    stroke-dashoffset: 1.02;
+  }
+  15%,
+  78% {
+    stroke-dashoffset: 0;
+  }
+  94%,
+  100% {
+    stroke-dashoffset: -1.02;
+  }
+}
+@keyframes temory-loop-knot {
+  0%,
+  10% {
+    transform: scale(0);
+  }
+  18% {
+    transform: scale(1.15);
+  }
+  22%,
+  80% {
+    transform: scale(1);
+  }
+  92%,
+  100% {
+    transform: scale(0);
+  }
+}
+@keyframes temory-loop-thread {
+  0%,
+  16% {
+    stroke-dashoffset: 1.02;
+  }
+  62%,
+  74% {
+    stroke-dashoffset: 0;
+  }
+  96%,
+  100% {
+    stroke-dashoffset: -1.02;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .temory-mark *,
+  .temory-splash *,
+  .temory-splash .temory-mark {
+    animation: none !important;
+  }
+}
+
 /* Tailwind v4 leaves buttons with the default cursor; anything you can press should show the hand. */
 @layer base {
   button:not(:disabled),

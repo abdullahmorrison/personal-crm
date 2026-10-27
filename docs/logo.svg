@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="2 -1 92 92">
+  <style>
+    .bar { stroke: #2b2926; }
+    .thread { stroke: #c9552f; }
+    .knot { fill: #c9552f; }
+    @media (prefers-color-scheme: dark) {
+      .bar { stroke: #ece6dc; }
+      .thread { stroke: #d9673f; }
+      .knot { fill: #d9673f; }
+    }
+  </style>
+  <mask id="under" maskUnits="userSpaceOnUse" x="-10" y="-10" width="120" height="120">
+    <rect x="-10" y="-10" width="120" height="120" fill="#fff" />
+    <circle cx="40" cy="38" r="10" fill="#000" />
+  </mask>
+  <path class="bar" d="M14 38 H78" fill="none" stroke-width="8" stroke-linecap="round" />
+  <path class="thread" mask="url(#under)" d="M14 38 C20 20 32 20 40 38 C44 50 42 70 50 70 C58 70 56 50 60 38 C68 20 80 20 86 38" fill="none" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+  <circle class="knot" cx="14" cy="38" r="7" />
+</svg>
