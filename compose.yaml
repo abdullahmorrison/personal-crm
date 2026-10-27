@@ -1,12 +1,20 @@
-# Listens on localhost only. On the server, a Cloudflare Tunnel connector forwards temory.app to it.
+# Runs the app behind a Cloudflare Tunnel, so nothing listens on the host.
+# Put the tunnel token in .env as TUNNEL_TOKEN, then: docker compose up -d --build
 services:
   app:
     build: .
     restart: unless-stopped
-    ports:
-      - 127.0.0.1:3100:3000
     volumes:
       - data:/app/data
+
+  tunnel:
+    image: cloudflare/cloudflared:2026.10.0
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?set TUNNEL_TOKEN in .env}
+    depends_on:
+      - app
 
 volumes:
   data:
