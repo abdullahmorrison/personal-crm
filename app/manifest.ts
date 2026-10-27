@@ -3,6 +3,8 @@ import type { MetadataRoute } from "next";
 // Makes the app installable. Icons live in public/icons so a host's login wall can let them through by path.
 export default function manifest(): MetadataRoute.Manifest {
   return {
+    // Fixed identity, so changing start_url later doesn't make phones see a different app.
+    id: "/",
     name: "Temory",
     short_name: "Temory",
     description: "Notable moments with the people in your life",
