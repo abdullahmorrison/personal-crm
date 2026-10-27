@@ -1,4 +1,6 @@
-# Personal CRM
+<p align="center"><img src="docs/logo.svg" alt="" width="120"></p>
+
+<h1 align="center">Temory</h1>
 
 [![Project Status: WIP](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 [![CI](https://github.com/abdullahmorrison/personal-crm/actions/workflows/ci.yml/badge.svg)](https://github.com/abdullahmorrison/personal-crm/actions/workflows/ci.yml)
