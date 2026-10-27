@@ -1,6 +1,8 @@
 # Production image: a standalone Next.js server with the SQLite database in /app/data.
 FROM node:22-bookworm-slim AS build
 WORKDIR /app
+# npm builds better-sqlite3 from source.
+RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ && rm -rf /var/lib/apt/lists/*
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY . .
