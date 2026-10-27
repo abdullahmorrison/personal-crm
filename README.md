@@ -1,4 +1,4 @@
-<h1><img src="docs/logo.svg" alt="" height="56" align="absmiddle"> Temory</h1>
+<h1><img src="docs/logo.svg" alt="" height="40" align="absmiddle"> Temory</h1>
 
 [![Project Status: WIP](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 [![CI](https://github.com/abdullahmorrison/personal-crm/actions/workflows/ci.yml/badge.svg)](https://github.com/abdullahmorrison/personal-crm/actions/workflows/ci.yml)

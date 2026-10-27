@@ -1,6 +1,7 @@
 import { useId } from "react";
 
 type Props = {
+  /** Height in px; the mark is 1.5 times as wide. */
   size?: number;
   /** "splash" draws the mark once; "loader" draws it, pulls the thread through, and repeats. */
   motion?: "none" | "splash" | "loader";
@@ -14,8 +15,8 @@ export function TemoryMark({ size = 32, motion = "none", label = "Temory", class
   const motionClass = motion === "none" ? "" : `temory-mark-${motion}`;
   return (
     <svg
-      viewBox="2 -1 92 92"
-      width={size}
+      viewBox="2 16.67 92 61.33"
+      width={size * 1.5}
       height={size}
       role="img"
       aria-label={label}
