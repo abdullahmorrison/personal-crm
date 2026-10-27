@@ -59,7 +59,17 @@ const SCRIPT = `try{var t=localStorage.getItem("${KEY}");if(t==="light"||t==="da
 /** In <head>: applies the saved theme while the page parses, before the first paint. */
 export function ThemeScript() {
   // React's dev remount resets <html> attributes, and the browser bar metas need it too.
-  useLayoutEffect(() => apply(saved()), []);
+  useLayoutEffect(() => {
+    apply(saved());
+    // Another tab changed the theme. A null key means storage was cleared.
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== KEY && event.key !== null) return;
+      apply(saved());
+      listeners.forEach((listener) => listener());
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
   // text/plain on the client so React doesn't warn about rendering a script; it already ran.
   return (
     <script
