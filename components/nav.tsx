@@ -91,12 +91,12 @@ function TabBarLinks({ path }: { path: Path }) {
 export function Sidebar() {
   return (
     <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-6 border-r border-line px-5 py-7 desk:flex">
-      <span className="flex items-center gap-2 text-[17px] font-medium">
+      <Link href="/" className="flex items-center gap-2 text-[17px] font-medium">
         <span aria-hidden="true">
           <TemoryMark size={28} />
         </span>
         Temory
-      </span>
+      </Link>
       <LogButton />
       <nav className="flex flex-col gap-1">
         <WithPath render={(path) => <SidebarLinks path={path} />} />
