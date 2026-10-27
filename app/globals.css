@@ -8,6 +8,12 @@
   --color-muted: #807a71;
   --color-ink: #2b2926;
   --color-accent: #c9552f;
+  /* Text on accent buttons: stays light in both themes. */
+  --color-on-accent: #faf7f2;
+  /* Menus and pickers that float above the page. */
+  --color-raised: #ffffff;
+  /* The ring around avatars. */
+  --color-halo: rgb(255 255 255 / 0.9);
 
   /* Person colors: a soft fill plus a darker ink for initials and mentions. */
   --color-clay: #f1d9cc;
@@ -36,6 +42,54 @@
 
   /* Sidebar layout from this width up; tab bar below it. */
   --breakpoint-desk: 1024px;
+}
+
+/* Shadows, warm brown in light mode. */
+:root {
+  --shadow-avatar: 0 2px 6px rgb(90 74 58 / 0.1);
+  --shadow-avatar-lift: 0 6px 14px rgb(90 74 58 / 0.18);
+  --shadow-drag: 0 10px 24px rgb(90 74 58 / 0.25);
+  --shadow-pop: 0 8px 24px rgb(90 74 58 / 0.14);
+  --shadow-cta: 0 4px 14px rgb(122 58 31 / 0.25);
+  color-scheme: light dark;
+}
+
+/* Dark mode, from the Figma dark style guide. Follows the device setting. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper: #1b1916;
+    --color-surface: #27241f;
+    --color-line: #34302a;
+    --color-muted: #9d968c;
+    --color-ink: #ece6dc;
+    --color-accent: #d9673f;
+    --color-raised: #26231f;
+    --color-halo: rgb(236 230 220 / 0.6);
+
+    --color-clay: #7a4632;
+    --color-clay-ink: #eeb49c;
+    --color-sand: #77602f;
+    --color-sand-ink: #e3c98c;
+    --color-sage: #4e6844;
+    --color-sage-ink: #b3cfa6;
+    --color-sky: #3e6386;
+    --color-sky-ink: #a6c4dd;
+    --color-lilac: #634f80;
+    --color-lilac-ink: #cab6e0;
+    --color-rose: #7d4352;
+    --color-rose-ink: #e8adb9;
+
+    --color-band-1: #292725;
+    --color-band-2: #252321;
+    --color-band-3: #21201e;
+    --color-band-4: #1e1d1b;
+
+    --shadow-avatar: 0 2px 6px rgb(0 0 0 / 0.35);
+    --shadow-avatar-lift: 0 6px 14px rgb(0 0 0 / 0.45);
+    --shadow-drag: 0 10px 24px rgb(0 0 0 / 0.5);
+    --shadow-pop: 0 8px 24px rgb(0 0 0 / 0.4);
+    --shadow-cta: 0 4px 14px rgb(0 0 0 / 0.4);
+  }
 }
 
 @keyframes pop-in {

@@ -55,7 +55,7 @@ export function DatePicker({ date, today, onPick, onClose }: Props) {
       ref={ref}
       role="dialog"
       aria-label="Pick a date"
-      className="absolute top-full left-0 z-10 mt-3 -ml-1 w-[310px] max-w-[calc(100vw-2rem)] rounded-2xl border border-line bg-white px-3.5 pt-3.5 pb-3 font-sans shadow-[0_8px_24px_rgba(90,74,58,0.14)]"
+      className="absolute top-full left-0 z-10 mt-3 -ml-1 w-[310px] max-w-[calc(100vw-2rem)] rounded-2xl border border-line bg-raised px-3.5 pt-3.5 pb-3 font-sans shadow-(--shadow-pop)"
     >
       <div className="flex items-center">
         <button type="button" onClick={() => setMonth(shiftMonth(month, -step))} aria-label={`Previous ${unit}`} className="rounded-full p-1.5 hover:bg-surface">
@@ -187,7 +187,7 @@ function Cell({
           wide ? "h-9 w-16" : "size-8"
         } ${
           picked
-            ? "bg-accent font-medium text-white"
+            ? "bg-accent font-medium text-on-accent"
             : current
               ? "font-medium text-accent ring-[1.5px] ring-line ring-inset group-hover:bg-surface"
               : "text-ink group-hover:bg-surface"

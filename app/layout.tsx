@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Newsreader, Poppins } from "next/font/google";
 import "./globals.css";
 
@@ -9,6 +9,14 @@ const newsreader = Newsreader({ subsets: ["latin"], style: ["normal", "italic"],
 export const metadata: Metadata = {
   title: "Personal CRM",
   description: "Notable moments with the people in your life",
+};
+
+// The browser bar matches the page in both themes.
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#faf7f2" },
+    { media: "(prefers-color-scheme: dark)", color: "#1b1916" },
+  ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

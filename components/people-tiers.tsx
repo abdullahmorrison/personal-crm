@@ -160,7 +160,7 @@ export function PeopleTiers({ people: saved }: { people: LayoutPerson[] }) {
       {drag && (
         <span
           style={{ transform: `${at(drag.x - drag.size / 2, drag.y - drag.size / 2)} scale(1.12)`, width: drag.size, height: drag.size, fontSize: Math.round(drag.size * 0.34) }}
-          className={`pointer-events-none absolute top-0 left-0 z-10 flex items-center justify-center rounded-full font-serif shadow-[0_10px_24px_rgba(90,74,58,0.25)] ring-2 ring-white ${personColor(drag.person.color).fill} ${personColor(drag.person.color).ink}`}
+          className={`pointer-events-none absolute top-0 left-0 z-10 flex items-center justify-center rounded-full font-serif shadow-(--shadow-drag) ring-2 ring-halo ${personColor(drag.person.color).fill} ${personColor(drag.person.color).ink}`}
         >
           {initials(drag.person.name)}
         </span>
@@ -258,7 +258,7 @@ function PersonBubble({ person, x, y, size, delay, selected, lifted, onDrag, onD
       <div style={{ animationDelay: `${delay}ms` }} className="flex flex-col items-center gap-1.5 motion-safe:animate-pop-in">
         <span
           style={{ width: size, height: size, fontSize: Math.round(size * 0.34) }}
-          className={`flex items-center justify-center rounded-full font-serif shadow-[0_2px_6px_rgba(90,74,58,0.10)] ${selected ? "ring-[2.5px] ring-accent" : "ring-2 ring-white/90"} transition group-hover:shadow-[0_6px_14px_rgba(90,74,58,0.18)] group-focus-visible:ring-ink group-active:scale-95 motion-safe:group-hover:-translate-y-0.5 ${color.fill} ${color.ink}`}
+          className={`flex items-center justify-center rounded-full font-serif shadow-(--shadow-avatar) ${selected ? "ring-[2.5px] ring-accent" : "ring-2 ring-halo"} transition group-hover:shadow-(--shadow-avatar-lift) group-focus-visible:ring-ink group-active:scale-95 motion-safe:group-hover:-translate-y-0.5 ${color.fill} ${color.ink}`}
         >
           {initials(person.name)}
         </span>

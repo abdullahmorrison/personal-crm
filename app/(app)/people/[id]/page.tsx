@@ -28,7 +28,7 @@ async function Profile({ params }: { params: Promise<{ id: string }> }) {
 
       <div className="mt-6 flex flex-col items-center gap-1.5 text-center desk:flex-row desk:gap-4 desk:text-left">
         <span
-          className={`flex size-22 shrink-0 items-center justify-center rounded-full font-serif text-[32px] shadow-[0_2px_6px_rgba(90,74,58,0.10)] ring-2 ring-white/90 ${color.fill} ${color.ink}`}
+          className={`flex size-22 shrink-0 items-center justify-center rounded-full font-serif text-[32px] shadow-(--shadow-avatar) ring-2 ring-halo ${color.fill} ${color.ink}`}
         >
           {initials(person.name)}
         </span>

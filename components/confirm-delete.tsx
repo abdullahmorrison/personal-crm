@@ -15,7 +15,7 @@ export function ConfirmDelete({ label, warning, action }: { label: string; warni
   return (
     <form action={action} className="flex flex-wrap items-center gap-3 text-sm">
       <span>{warning}</span>
-      <button className="rounded-full bg-accent px-4 py-2 font-medium text-paper transition hover:brightness-110">Delete</button>
+      <button className="rounded-full bg-accent px-4 py-2 font-medium text-on-accent transition hover:brightness-110">Delete</button>
       <button type="button" onClick={() => setConfirming(false)} className="text-muted hover:text-ink">
         Cancel
       </button>
