@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Newsreader, Poppins } from "next/font/google";
+import { ThemeScript } from "@/components/theme";
 import "./globals.css";
 
 // Poppins for the interface, Newsreader for anything the user writes.
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
   description: "Notable moments with the people in your life",
 };
 
-// The browser bar matches the page in both themes.
+// The browser bar matches the page in both themes. A theme picked in Settings overrides these (components/theme.tsx).
 export const viewport: Viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#faf7f2" },
@@ -21,7 +22,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${poppins.variable} ${newsreader.variable} antialiased`}>
+    <html lang="en" className={`${poppins.variable} ${newsreader.variable} antialiased`} suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
       <body className="font-sans">{children}</body>
     </html>
   );

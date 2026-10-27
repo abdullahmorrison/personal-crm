@@ -1,39 +1,39 @@
 @import "tailwindcss";
 
-/* Design tokens from the Figma style guide. */
+/* Design tokens from the Figma style guide: light-dark(light, dark), picked by color-scheme below. */
 @theme {
-  --color-paper: #faf7f2;
-  --color-surface: #f2ede4;
-  --color-line: #e4ddd1;
-  --color-muted: #807a71;
-  --color-ink: #2b2926;
-  --color-accent: #c9552f;
+  --color-paper: light-dark(#faf7f2, #1b1916);
+  --color-surface: light-dark(#f2ede4, #27241f);
+  --color-line: light-dark(#e4ddd1, #34302a);
+  --color-muted: light-dark(#807a71, #9d968c);
+  --color-ink: light-dark(#2b2926, #ece6dc);
+  --color-accent: light-dark(#c9552f, #d9673f);
   /* Text on accent buttons: stays light in both themes. */
   --color-on-accent: #faf7f2;
   /* Menus and pickers that float above the page. */
-  --color-raised: #ffffff;
+  --color-raised: light-dark(#ffffff, #26231f);
   /* The ring around avatars. */
-  --color-halo: rgb(255 255 255 / 0.9);
+  --color-halo: light-dark(rgb(255 255 255 / 0.9), rgb(236 230 220 / 0.6));
 
   /* Person colors: a soft fill plus a darker ink for initials and mentions. */
-  --color-clay: #f1d9cc;
-  --color-clay-ink: #9a4e2e;
-  --color-sand: #f1e3c4;
-  --color-sand-ink: #86652a;
-  --color-sage: #dce6d3;
-  --color-sage-ink: #4e6b45;
-  --color-sky: #d6e2ec;
-  --color-sky-ink: #3f6380;
-  --color-lilac: #e3daea;
-  --color-lilac-ink: #66507e;
-  --color-rose: #f0d6da;
-  --color-rose-ink: #8e4656;
+  --color-clay: light-dark(#f1d9cc, #7a4632);
+  --color-clay-ink: light-dark(#9a4e2e, #eeb49c);
+  --color-sand: light-dark(#f1e3c4, #77602f);
+  --color-sand-ink: light-dark(#86652a, #e3c98c);
+  --color-sage: light-dark(#dce6d3, #4e6844);
+  --color-sage-ink: light-dark(#4e6b45, #b3cfa6);
+  --color-sky: light-dark(#d6e2ec, #3e6386);
+  --color-sky-ink: light-dark(#3f6380, #a6c4dd);
+  --color-lilac: light-dark(#e3daea, #634f80);
+  --color-lilac-ink: light-dark(#66507e, #cab6e0);
+  --color-rose: light-dark(#f0d6da, #7d4352);
+  --color-rose-ink: light-dark(#8e4656, #e8adb9);
 
   /* People screen tier bands, innermost first. */
-  --color-band-1: #ede6db;
-  --color-band-2: #f0eae1;
-  --color-band-3: #f3eee6;
-  --color-band-4: #f6f2eb;
+  --color-band-1: light-dark(#ede6db, #292725);
+  --color-band-2: light-dark(#f0eae1, #252321);
+  --color-band-3: light-dark(#f3eee6, #21201e);
+  --color-band-4: light-dark(#f6f2eb, #1e1d1b);
 
   --animate-pop-in: pop-in 320ms cubic-bezier(0.2, 0.8, 0.3, 1.2) both;
 
@@ -44,52 +44,24 @@
   --breakpoint-desk: 1024px;
 }
 
-/* Shadows, warm brown in light mode. */
+/* Follows the device unless Settings picks a theme (lib/theme.ts sets data-theme). */
 :root {
-  --shadow-avatar: 0 2px 6px rgb(90 74 58 / 0.1);
-  --shadow-avatar-lift: 0 6px 14px rgb(90 74 58 / 0.18);
-  --shadow-drag: 0 10px 24px rgb(90 74 58 / 0.25);
-  --shadow-pop: 0 8px 24px rgb(90 74 58 / 0.14);
-  --shadow-cta: 0 4px 14px rgb(122 58 31 / 0.25);
   color-scheme: light dark;
 }
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
 
-/* Dark mode, from the Figma dark style guide. Follows the device setting. */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-paper: #1b1916;
-    --color-surface: #27241f;
-    --color-line: #34302a;
-    --color-muted: #9d968c;
-    --color-ink: #ece6dc;
-    --color-accent: #d9673f;
-    --color-raised: #26231f;
-    --color-halo: rgb(236 230 220 / 0.6);
-
-    --color-clay: #7a4632;
-    --color-clay-ink: #eeb49c;
-    --color-sand: #77602f;
-    --color-sand-ink: #e3c98c;
-    --color-sage: #4e6844;
-    --color-sage-ink: #b3cfa6;
-    --color-sky: #3e6386;
-    --color-sky-ink: #a6c4dd;
-    --color-lilac: #634f80;
-    --color-lilac-ink: #cab6e0;
-    --color-rose: #7d4352;
-    --color-rose-ink: #e8adb9;
-
-    --color-band-1: #292725;
-    --color-band-2: #252321;
-    --color-band-3: #21201e;
-    --color-band-4: #1e1d1b;
-
-    --shadow-avatar: 0 2px 6px rgb(0 0 0 / 0.35);
-    --shadow-avatar-lift: 0 6px 14px rgb(0 0 0 / 0.45);
-    --shadow-drag: 0 10px 24px rgb(0 0 0 / 0.5);
-    --shadow-pop: 0 8px 24px rgb(0 0 0 / 0.4);
-    --shadow-cta: 0 4px 14px rgb(0 0 0 / 0.4);
-  }
+/* Shadows: warm brown in light mode, black in dark. */
+:root {
+  --shadow-avatar: 0 2px 6px light-dark(rgb(90 74 58 / 0.1), rgb(0 0 0 / 0.35));
+  --shadow-avatar-lift: 0 6px 14px light-dark(rgb(90 74 58 / 0.18), rgb(0 0 0 / 0.45));
+  --shadow-drag: 0 10px 24px light-dark(rgb(90 74 58 / 0.25), rgb(0 0 0 / 0.5));
+  --shadow-pop: 0 8px 24px light-dark(rgb(90 74 58 / 0.14), rgb(0 0 0 / 0.4));
+  --shadow-cta: 0 4px 14px light-dark(rgb(122 58 31 / 0.25), rgb(0 0 0 / 0.4));
 }
 
 @keyframes pop-in {

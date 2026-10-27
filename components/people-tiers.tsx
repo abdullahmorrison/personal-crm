@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Plus, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useOptimistic, useRef, useState, useSyncExternalStore, useTransition } from "react";
@@ -182,20 +182,25 @@ export function PeopleTiers({ people: saved }: { people: LayoutPerson[] }) {
             {people.length} {people.length === 1 ? "person" : "people"}
           </p>
         </div>
-        <Link
-          href="/people/new"
-          aria-label="Add person"
-          className="flex items-center gap-1.5 rounded-full border border-line bg-paper p-2.5 text-sm font-medium transition-colors hover:border-muted hover:bg-surface desk:px-4 desk:py-2"
-        >
-          <Plus size={18} />
-          <span className="hidden desk:inline">Add person</span>
-        </Link>
+        <div className="flex gap-2">
+          {/* Desktop reaches Settings from the sidebar. */}
+          <Link href="/settings" aria-label="Settings" className={`${HEADER_BUTTON} desk:hidden`}>
+            <Settings size={18} />
+          </Link>
+          <Link href="/people/new" aria-label="Add person" className={`${HEADER_BUTTON} desk:px-4 desk:py-2`}>
+            <Plus size={18} />
+            <span className="hidden desk:inline">Add person</span>
+          </Link>
+        </div>
       </header>
 
       {people.length === 0 && layout && <EmptyPrompt bands={layout.bands} />}
     </div>
   );
 }
+
+const HEADER_BUTTON =
+  "flex items-center gap-1.5 rounded-full border border-line bg-paper p-2.5 text-sm font-medium transition-colors hover:border-muted hover:bg-surface";
 
 /** Centred inside a middle band, clear of the tier labels and arc edges. */
 function EmptyPrompt({ bands }: { bands: { labelY: number }[] }) {

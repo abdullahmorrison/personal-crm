@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, MapPin, PartyPopper, PenLine, Users } from "lucide-react";
+import { BookOpen, MapPin, PartyPopper, PenLine, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense } from "react";
@@ -98,7 +98,7 @@ export function Sidebar() {
         Temory
       </span>
       <LogButton />
-      <nav className="flex flex-col gap-1">
+      <nav className="flex flex-1 flex-col gap-1">
         <WithPath render={(path) => <SidebarLinks path={path} />} />
       </nav>
     </aside>
@@ -108,19 +108,24 @@ export function Sidebar() {
 function SidebarLinks({ path }: { path: Path }) {
   return (
     <>
-      {TABS.map(({ href, label, Icon }) => {
-        const on = isActive(path, href);
-        return (
-          <Link
-            key={href}
-            href={href}
-            className={`flex items-center gap-3 rounded-[10px] px-3 py-2.5 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-0 ${on ? "bg-surface font-medium text-ink" : "text-muted hover:bg-surface/60 hover:text-ink"}`}
-          >
-            <Icon size={20} className={on ? "text-accent" : ""} />
-            {label}
-          </Link>
-        );
-      })}
+      {TABS.map((tab) => (
+        <SidebarLink key={tab.href} {...tab} on={isActive(path, tab.href)} />
+      ))}
+      <SidebarLink href="/settings" label="Settings" Icon={Settings} on={isActive(path, "/settings")} className="mt-auto" />
     </>
+  );
+}
+
+type SidebarLinkProps = { href: string; label: string; Icon: typeof Users; on: boolean; className?: string };
+
+function SidebarLink({ href, label, Icon, on, className = "" }: SidebarLinkProps) {
+  return (
+    <Link
+      href={href}
+      className={`flex items-center gap-3 rounded-[10px] px-3 py-2.5 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-0 ${on ? "bg-surface font-medium text-ink" : "text-muted hover:bg-surface/60 hover:text-ink"} ${className}`}
+    >
+      <Icon size={20} className={on ? "text-accent" : ""} />
+      {label}
+    </Link>
   );
 }
