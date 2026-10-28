@@ -19,11 +19,11 @@ type Options = {
   height: number;
   top: number; // space reserved above the outermost band (header)
   bottom: number; // space reserved below the innermost band (buttons, tab bar)
-  tiers: readonly { value: number; label: string }[]; // closest first
+  tiers: readonly { value: number; label: string; band?: string }[]; // closest first; `band` overrides the label on the arc
 };
 
 // Bubble diameter per tier, closest first; tiers past the end reuse the last size.
-const SIZES = [64, 56, 50, 44];
+const SIZES = [64, 56, 50, 44, 40];
 const SIDE_MARGIN = 28;
 const LABEL_GAP = 34; // from a band's outer edge to its row of bubbles
 
@@ -44,7 +44,7 @@ export function layoutTiers(people: LayoutPerson[], { width, height, top, bottom
     const outerRadius = innerRadius + bandHeight * (i + 1);
     const size = bubbleSize(i);
     const inTier = people.filter((p) => p.closeness === tier.value).sort((a, b) => a.name.localeCompare(b.name));
-    bands.push({ tier: tier.value, label: tier.label, count: inTier.length, outerRadius, labelY: center.y - outerRadius + 12 });
+    bands.push({ tier: tier.value, label: tier.band ?? tier.label, count: inTier.length, outerRadius, labelY: center.y - outerRadius + 12 });
     if (inTier.length === 0) return;
 
     // How many bubbles fit side by side, leaving room for names under them.

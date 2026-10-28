@@ -12,6 +12,7 @@ describe("layoutTiers", () => {
     const labels = bands.map((b) => b.labelY);
     expect(labels).toEqual([...labels].sort((a, b) => b - a));
     expect(bands[0].label).toBe("Inner circle");
+    expect(bands.at(-1)!.label).toBe("Prospects");
   });
 
   it("counts everyone in a tier, including hidden people", () => {
