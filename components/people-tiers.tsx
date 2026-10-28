@@ -78,13 +78,14 @@ export function PeopleTiers({ people: saved }: { people: LayoutPerson[] }) {
   const known = people.filter((p) => p.closeness !== PROSPECT).length;
   const prospects = people.length - known;
 
-  // Open at the bottom, closest tier in view. Only once, so coming back keeps your scroll.
+  // Open at the bottom, closest tier in view, the first time there's anything to scroll. Only
+  // once, so coming back keeps your scroll.
   const opened = useRef(false);
   useLayoutEffect(() => {
-    if (!size || opened.current || !scroller.current) return;
+    if (!extra || opened.current || !scroller.current) return;
     opened.current = true;
     scroller.current.scrollTop = scroller.current.scrollHeight;
-  }, [size]);
+  }, [extra]);
 
   const local = (p: Point) => {
     const box = canvas.current!.getBoundingClientRect();
@@ -185,9 +186,9 @@ export function PeopleTiers({ people: saved }: { people: LayoutPerson[] }) {
           {drag && (
             <span
               style={{ transform: `${at(drag.x - drag.size / 2, drag.y - drag.size / 2)} scale(1.12)`, width: drag.size, height: drag.size, fontSize: Math.round(drag.size * 0.34) }}
-              className={`pointer-events-none absolute top-0 left-0 z-10 flex items-center justify-center rounded-full font-serif shadow-(--shadow-drag) ${face(drag.person)}`}
+              className={`pointer-events-none absolute top-0 left-0 z-10 flex items-center justify-center rounded-full font-serif shadow-(--shadow-drag) ${face(drag.person).className}`}
             >
-              {faceText(drag.person)}
+              {face(drag.person).text}
             </span>
           )}
 
@@ -281,13 +282,16 @@ type BubbleProps = {
 /** A filled circle in the person's color; prospects get just an outline, since you don't know them yet. */
 function face(person: LayoutPerson, selected = false) {
   const color = personColor(person.color);
-  const ring = selected ? "ring-[2.5px] ring-accent" : person.closeness === PROSPECT ? "ring-[1.5px] ring-current" : "ring-2 ring-halo";
-  return `${ring} ${color.ink} ${person.closeness === PROSPECT ? "bg-paper" : color.fill}`;
+  const prospect = person.closeness === PROSPECT;
+  const ring = selected ? "ring-[2.5px] ring-accent" : prospect ? "ring-[1.5px] ring-current" : "ring-2 ring-halo";
+  return {
+    className: `${ring} ${color.ink} ${prospect ? "bg-paper" : color.fill}`,
+    text: prospect ? initials(person.name).slice(0, 1) : initials(person.name),
+  };
 }
 
-const faceText = (person: LayoutPerson) => (person.closeness === PROSPECT ? initials(person.name).slice(0, 1) : initials(person.name));
-
 function PersonBubble({ person, x, y, size, delay, selected, lifted, onDrag, onDrop, onCancel }: BubbleProps) {
+  const look = face(person, selected);
   const drag = usePressDrag({ onStart: onDrag, onMove: onDrag, onDrop, onCancel });
   return (
     <Link
@@ -300,9 +304,9 @@ function PersonBubble({ person, x, y, size, delay, selected, lifted, onDrag, onD
       <div style={{ animationDelay: `${delay}ms` }} className="flex flex-col items-center gap-1.5 motion-safe:animate-pop-in">
         <span
           style={{ width: size, height: size, fontSize: Math.round(size * 0.34) }}
-          className={`flex items-center justify-center rounded-full font-serif shadow-(--shadow-avatar) transition group-hover:shadow-(--shadow-avatar-lift) group-focus-visible:ring-ink group-active:scale-95 motion-safe:group-hover:-translate-y-0.5 ${face(person, selected)}`}
+          className={`flex items-center justify-center rounded-full font-serif shadow-(--shadow-avatar) transition group-hover:shadow-(--shadow-avatar-lift) group-focus-visible:ring-ink group-active:scale-95 motion-safe:group-hover:-translate-y-0.5 ${look.className}`}
         >
-          {faceText(person)}
+          {look.text}
         </span>
         <span className={`max-w-full truncate text-xs ${selected ? "font-medium" : person.closeness >= ACQUAINTANCE ? "text-muted" : ""}`}>
           {firstName(person.name)}

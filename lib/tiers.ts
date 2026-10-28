@@ -5,7 +5,7 @@ export const TIERS = [
   { value: 3, label: "Friend" },
   { value: 4, label: "Acquaintance" },
   // People you'd like to know but don't yet. They're counted apart from everyone else.
-  { value: 5, label: "Prospect" },
+  { value: 5, label: "Prospect", band: "Prospects" },
 ] as const;
 
 export const ACQUAINTANCE = 4;
