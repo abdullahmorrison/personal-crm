@@ -1,5 +1,5 @@
-import { count, eq } from "drizzle-orm";
-import { people } from "@/db/schema";
+import { asc, count, eq, max } from "drizzle-orm";
+import { entries, entryPeople, people } from "@/db/schema";
 import type { Db } from "@/lib/db";
 import { nextColor } from "@/lib/person-colors";
 import { NEW_PERSON_CLOSENESS, TIERS } from "@/lib/tiers";
@@ -60,5 +60,19 @@ export function listPeople(db: Db) {
   return db
     .select({ id: people.id, name: people.name, closeness: people.closeness, color: people.color })
     .from(people)
+    .all();
+}
+
+/** Everyone in a tier with the date of their latest moment, least recent first and never-logged at the top. */
+export function listTier(db: Db, closeness: number) {
+  const lastMoment = max(entries.date);
+  return db
+    .select({ id: people.id, name: people.name, color: people.color, lastMoment })
+    .from(people)
+    .leftJoin(entryPeople, eq(entryPeople.personId, people.id))
+    .leftJoin(entries, eq(entries.id, entryPeople.entryId))
+    .where(eq(people.closeness, closeness))
+    .groupBy(people.id)
+    .orderBy(asc(lastMoment), asc(people.name))
     .all();
 }
