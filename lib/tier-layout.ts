@@ -23,7 +23,7 @@ type Options = {
 };
 
 // Bubble diameter per tier, closest first; tiers past the end reuse the last size.
-const SIZES = [64, 56, 50, 44];
+const SIZES = [64, 56, 50, 44, 40];
 const SIDE_MARGIN = 28;
 const LABEL_GAP = 34; // from a band's outer edge to its row of bubbles
 

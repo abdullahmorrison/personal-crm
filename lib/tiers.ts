@@ -4,9 +4,13 @@ export const TIERS = [
   { value: 2, label: "Close" },
   { value: 3, label: "Friend" },
   { value: 4, label: "Acquaintance" },
+  // People you'd like to know but don't yet. They're counted apart from everyone else.
+  { value: 5, label: "Prospect" },
 ] as const;
 
-export const NEW_PERSON_CLOSENESS = TIERS[TIERS.length - 1].value;
+export const ACQUAINTANCE = 4;
+export const PROSPECT = 5;
+export const NEW_PERSON_CLOSENESS = ACQUAINTANCE;
 
 export function tierLabel(closeness: number) {
   return TIERS.find((t) => t.value === closeness)?.label ?? "Unknown";
