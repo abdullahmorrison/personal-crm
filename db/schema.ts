@@ -54,3 +54,23 @@ export const personPlaces = sqliteTable(
   // The primary key covers lookups by person; the index covers who goes to a place.
   (t) => [primaryKey({ columns: [t.personId, t.placeId] }), index("person_places_place_id").on(t.placeId)],
 );
+
+export const activities = sqliteTable("activities", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: integer("user_id"),
+  name: text("name").notNull(),
+  icon: text("icon").notNull(), // a key of ACTIVITY_ICONS in lib/activity-icons.ts
+  notes: text("notes").notNull().default(""),
+  createdAt: createdAt(),
+});
+
+// Who you do an activity with.
+export const activityPeople = sqliteTable(
+  "activity_people",
+  {
+    activityId: integer("activity_id").notNull().references(() => activities.id, { onDelete: "cascade" }),
+    personId: integer("person_id").notNull().references(() => people.id, { onDelete: "cascade" }),
+  },
+  // The primary key covers lookups by activity; the index covers a person's activities.
+  (t) => [primaryKey({ columns: [t.activityId, t.personId] }), index("activity_people_person_id").on(t.personId)],
+);
