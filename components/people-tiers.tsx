@@ -9,7 +9,7 @@ import { usePressDrag, type Point } from "@/components/use-press-drag";
 import { firstName, initials } from "@/lib/names";
 import { personColor } from "@/lib/person-colors";
 import { layoutTiers, tierAt, type LayoutPerson } from "@/lib/tier-layout";
-import { ACQUAINTANCE, PROSPECT, TIERS } from "@/lib/tiers";
+import { ACQUAINTANCE, PROSPECT, TIERS, tierLabel } from "@/lib/tiers";
 
 // Everything is placed with transforms, which the browser can move without redoing layout.
 // When the side panel opens or closes, the arcs snap to their new size with no animation.
@@ -163,21 +163,23 @@ export function PeopleTiers({ people: saved }: { people: LayoutPerson[] }) {
                     onCancel={() => setDrag(null)}
                   />
                 ) : (
-                  <div
+                  <Link
                     key={`more-${b.tier}`}
+                    href={`/people/tiers/${b.tier}`}
+                    aria-label={`${b.hidden} more, see everyone in ${tierLabel(b.tier)}`}
                     style={{ transform: at(b.x - b.size / 2, b.y - b.size / 2), width: b.size }}
-                    className={`absolute top-0 left-0`}
+                    className="group absolute top-0 left-0 rounded-lg outline-none"
                   >
                     <div style={{ animationDelay: `${stagger(i)}ms` }} className="flex flex-col items-center gap-1.5 motion-safe:animate-pop-in">
                       <span
                         style={{ width: b.size, height: b.size }}
-                        className="flex items-center justify-center rounded-full border border-dashed border-muted text-sm font-medium"
+                        className="flex items-center justify-center rounded-full border border-dashed border-muted text-sm font-medium transition group-hover:border-ink group-hover:bg-surface group-focus-visible:border-ink group-active:scale-95"
                       >
                         +{b.hidden}
                       </span>
                       <span className="text-[11px] text-muted">more</span>
                     </div>
-                  </div>
+                  </Link>
                 ),
               )}
             </>

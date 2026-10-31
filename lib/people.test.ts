@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { openDb } from "./db";
 import { entries, entryPeople } from "@/db/schema";
-import { createPerson, deletePerson, getPerson, moveToTier, updatePerson } from "./people";
+import { createPerson, deletePerson, getPerson, listTier, moveToTier, updatePerson } from "./people";
 import { NEW_PERSON_CLOSENESS } from "./tiers";
 
 describe("createPerson", () => {
@@ -78,5 +78,25 @@ describe("moveToTier", () => {
     const sam = createPerson(db, { name: "Sam" });
     expect(() => moveToTier(db, sam.id, 0)).toThrow("Unknown closeness");
     expect(() => moveToTier(db, 999, 1)).toThrow("no longer exists");
+  });
+});
+
+describe("listTier", () => {
+  it("lists one tier A to Z, with each person's latest moment", () => {
+    const db = openDb(":memory:");
+    const [noor, eli, dev] = ["Noor", "Eli", "Dev"].map((name) => createPerson(db, { name }));
+    createPerson(db, { name: "Sam", closeness: 1 });
+    const log = (date: string, ...ids: number[]) => {
+      const entry = db.insert(entries).values({ body: "Hi", date }).returning().get();
+      for (const personId of ids) db.insert(entryPeople).values({ entryId: entry.id, personId }).run();
+    };
+    log("2026-01-05", noor.id, eli.id);
+    log("2026-09-01", noor.id);
+    log("2026-10-01", dev.id);
+    expect(listTier(db, NEW_PERSON_CLOSENESS)).toEqual([
+      { id: dev.id, name: "Dev", color: dev.color, lastMoment: "2026-10-01" },
+      { id: eli.id, name: "Eli", color: eli.color, lastMoment: "2026-01-05" },
+      { id: noor.id, name: "Noor", color: noor.color, lastMoment: "2026-09-01" },
+    ]);
   });
 });

@@ -13,6 +13,10 @@ export const longDate = (date: string) => fmt({ weekday: "long", month: "long", 
 /** "Thu, Oct 22" */
 export const shortDate = (date: string) => fmt({ weekday: "short", month: "short", day: "numeric" }).format(day(date));
 
+/** "Oct 22", or "Oct 22, 2024" outside the current year */
+export const dayLabel = (date: string) =>
+  fmt({ month: "short", day: "numeric", year: day(date).getUTCFullYear() === new Date().getUTCFullYear() ? undefined : "numeric" }).format(day(date));
+
 /** "Oct" */
 export const shortMonth = (date: string) => fmt({ month: "short" }).format(day(date));
 
