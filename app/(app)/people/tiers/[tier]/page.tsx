@@ -22,7 +22,7 @@ async function TierList({ params }: { params: Promise<{ tier: string }> }) {
       <BackLink href="/people" label="Back to people" />
       <h1 className="mt-6 text-[28px] font-medium desk:mt-0 desk:text-2xl">{tier.plural}</h1>
       <p className="mt-1 text-[13px] text-muted">
-        {people.length} {people.length === 1 ? "person" : "people"} · least recent first
+        {people.length} {people.length === 1 ? "person" : "people"}
       </p>
       <ul className="mt-6 flex flex-col">
         {people.map((p) => {

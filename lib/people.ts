@@ -1,4 +1,4 @@
-import { asc, count, eq, max } from "drizzle-orm";
+import { count, eq, max } from "drizzle-orm";
 import { entries, entryPeople, people } from "@/db/schema";
 import type { Db } from "@/lib/db";
 import { nextColor } from "@/lib/person-colors";
@@ -63,7 +63,7 @@ export function listPeople(db: Db) {
     .all();
 }
 
-/** Everyone in a tier with the date of their latest moment, least recent first and never-logged at the top. */
+/** Everyone in a tier with the date of their latest moment, A to Z like the arcs. */
 export function listTier(db: Db, closeness: number) {
   const lastMoment = max(entries.date);
   return db
@@ -73,6 +73,6 @@ export function listTier(db: Db, closeness: number) {
     .leftJoin(entries, eq(entries.id, entryPeople.entryId))
     .where(eq(people.closeness, closeness))
     .groupBy(people.id)
-    .orderBy(asc(lastMoment), asc(people.name))
-    .all();
+    .all()
+    .sort((a, b) => a.name.localeCompare(b.name));
 }

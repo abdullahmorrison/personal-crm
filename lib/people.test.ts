@@ -82,7 +82,7 @@ describe("moveToTier", () => {
 });
 
 describe("listTier", () => {
-  it("lists one tier, never-logged first, then least recent", () => {
+  it("lists one tier A to Z, with each person's latest moment", () => {
     const db = openDb(":memory:");
     const [noor, eli, dev] = ["Noor", "Eli", "Dev"].map((name) => createPerson(db, { name }));
     createPerson(db, { name: "Sam", closeness: 1 });
@@ -92,8 +92,9 @@ describe("listTier", () => {
     };
     log("2026-01-05", noor.id, eli.id);
     log("2026-09-01", noor.id);
+    log("2026-10-01", dev.id);
     expect(listTier(db, NEW_PERSON_CLOSENESS)).toEqual([
-      { id: dev.id, name: "Dev", color: dev.color, lastMoment: null },
+      { id: dev.id, name: "Dev", color: dev.color, lastMoment: "2026-10-01" },
       { id: eli.id, name: "Eli", color: eli.color, lastMoment: "2026-01-05" },
       { id: noor.id, name: "Noor", color: noor.color, lastMoment: "2026-09-01" },
     ]);
