@@ -15,6 +15,13 @@
       "when": 1792964964099,
       "tag": "0001_via_mention",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1793420506298,
+      "tag": "0002_activities",
+      "breakpoints": true
     }
   ]
 }
