@@ -8,35 +8,39 @@ type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
 type ActivityInput = { name: string; icon: string; notes?: string; personIds?: number[] };
 
 /** Trims and checks what the user typed; throws a message fit to show them. */
-function clean(input: ActivityInput) {
+function clean(db: Db, input: ActivityInput) {
   const name = input.name.trim();
   if (!name) throw new Error("An activity needs a name.");
   if (!isActivityIcon(input.icon)) throw new Error(`Unknown icon: ${input.icon}`);
-  return { name, icon: input.icon, notes: (input.notes ?? "").trim() };
+  const personIds = [...new Set(input.personIds ?? [])];
+  if (personIds.length) {
+    const found = db.select({ id: people.id }).from(people).where(inArray(people.id, personIds)).all();
+    if (found.length !== personIds.length) throw new Error("Someone you added no longer exists.");
+  }
+  return { values: { name, icon: input.icon, notes: (input.notes ?? "").trim() }, personIds };
 }
 
 function setPeople(db: Tx, activityId: number, personIds: number[]) {
   db.delete(activityPeople).where(eq(activityPeople.activityId, activityId)).run();
-  const ids = [...new Set(personIds)];
-  if (ids.length) db.insert(activityPeople).values(ids.map((personId) => ({ activityId, personId }))).run();
+  if (personIds.length) db.insert(activityPeople).values(personIds.map((personId) => ({ activityId, personId }))).run();
 }
 
 export function createActivity(db: Db, input: ActivityInput) {
-  const values = clean(input);
+  const { values, personIds } = clean(db, input);
   return db.transaction((tx) => {
     const created = tx.insert(activities).values(values).returning().get();
-    setPeople(tx, created.id, input.personIds ?? []);
+    setPeople(tx, created.id, personIds);
     return created;
   });
 }
 
 /** Changes name, icon, notes, and who it's with. */
 export function updateActivity(db: Db, id: number, input: ActivityInput) {
-  const values = clean(input);
+  const { values, personIds } = clean(db, input);
   return db.transaction((tx) => {
     const updated = tx.update(activities).set(values).where(eq(activities.id, id)).returning().get();
     if (!updated) throw new Error("This activity no longer exists.");
-    setPeople(tx, id, input.personIds ?? []);
+    setPeople(tx, id, personIds);
     return updated;
   });
 }

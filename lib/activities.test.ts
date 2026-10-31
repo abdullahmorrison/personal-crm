@@ -17,6 +17,11 @@ describe("createActivity", () => {
     expect(() => createActivity(db, { name: "  ", icon: "dices" })).toThrow("needs a name");
     expect(() => createActivity(db, { name: "Chess", icon: "chess" })).toThrow("Unknown icon");
   });
+
+  it("fails clearly when someone added is gone", () => {
+    const db = openDb(":memory:");
+    expect(() => createActivity(db, { name: "Chess", icon: "dices", personIds: [999] })).toThrow("no longer exists");
+  });
 });
 
 describe("updateActivity", () => {

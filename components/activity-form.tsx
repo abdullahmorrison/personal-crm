@@ -22,56 +22,58 @@ export function ActivityForm({ action, people, submitLabel, defaults }: Props) {
   const [chosen, setChosen] = useState(defaults?.personIds ?? []);
 
   return (
-    <form action={formAction} className="flex flex-col gap-8">
-      <div className="flex items-center gap-4">
+    <>
+      <form action={formAction} className="flex flex-col gap-8">
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => setPicking(true)}
+            aria-label="Pick an icon"
+            className="flex size-12 shrink-0 items-center justify-center rounded-xl border border-line bg-surface text-ink transition-colors hover:border-muted"
+          >
+            <ActivityIcon icon={icon} size={22} strokeWidth={1.75} />
+          </button>
+          <input type="hidden" name="icon" value={icon} />
+          <input
+            name="name"
+            required
+            autoFocus={!defaults}
+            autoComplete="off"
+            placeholder="Name"
+            defaultValue={defaults?.name}
+            className="min-w-0 flex-1 border-b border-line bg-transparent pb-2 font-serif text-3xl outline-none placeholder:text-muted/60 focus:border-ink"
+          />
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <SectionLabel as="span">With</SectionLabel>
+          <WithPeople people={people} chosen={chosen} onChange={setChosen} />
+          {chosen.map((id) => (
+            <input key={id} type="hidden" name="personIds" value={id} />
+          ))}
+        </div>
+
+        <label className="flex flex-col gap-3">
+          <SectionLabel as="span">Notes</SectionLabel>
+          <textarea
+            name="notes"
+            rows={4}
+            defaultValue={defaults?.notes}
+            placeholder="When, where, who brings what…"
+            className="resize-none bg-transparent font-serif text-lg leading-relaxed outline-none placeholder:text-muted/60"
+          />
+        </label>
+
+        {state.error && <p className="text-sm text-accent" aria-live="polite">{state.error}</p>}
+
         <button
-          type="button"
-          onClick={() => setPicking(true)}
-          aria-label="Pick an icon"
-          className="flex size-12 shrink-0 items-center justify-center rounded-xl border border-line bg-surface text-ink transition-colors hover:border-muted"
+          disabled={pending}
+          className="self-start rounded-full bg-accent px-6 py-3 text-sm font-medium text-on-accent transition hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
         >
-          <ActivityIcon icon={icon} size={22} strokeWidth={1.75} />
+          {pending ? "Saving…" : submitLabel}
         </button>
-        <input type="hidden" name="icon" value={icon} />
-        <input
-          name="name"
-          required
-          autoFocus={!defaults}
-          autoComplete="off"
-          placeholder="Name"
-          defaultValue={defaults?.name}
-          className="min-w-0 flex-1 border-b border-line bg-transparent pb-2 font-serif text-3xl outline-none placeholder:text-muted/60 focus:border-ink"
-        />
-      </div>
-
-      <div className="flex flex-col gap-3">
-        <SectionLabel as="span">With</SectionLabel>
-        <WithPeople people={people} chosen={chosen} onChange={setChosen} />
-        {chosen.map((id) => (
-          <input key={id} type="hidden" name="personIds" value={id} />
-        ))}
-      </div>
-
-      <label className="flex flex-col gap-3">
-        <SectionLabel as="span">Notes</SectionLabel>
-        <textarea
-          name="notes"
-          rows={4}
-          defaultValue={defaults?.notes}
-          placeholder="When, where, who brings what…"
-          className="resize-none bg-transparent font-serif text-lg leading-relaxed outline-none placeholder:text-muted/60"
-        />
-      </label>
-
-      {state.error && <p className="text-sm text-accent" aria-live="polite">{state.error}</p>}
-
-      <button
-        disabled={pending}
-        className="self-start rounded-full bg-accent px-6 py-3 text-sm font-medium text-on-accent transition hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
-      >
-        {pending ? "Saving…" : submitLabel}
-      </button>
-
+      </form>
+      {/* Outside the form, so Enter in its search doesn't submit the activity. */}
       {picking && (
         <IconPicker
           current={icon}
@@ -82,7 +84,7 @@ export function ActivityForm({ action, people, submitLabel, defaults }: Props) {
           onClose={() => setPicking(false)}
         />
       )}
-    </form>
+    </>
   );
 }
 
