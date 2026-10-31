@@ -47,3 +47,27 @@ jobs:
       - uses: amannn/action-semantic-pull-request@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Once main passes, join the tailnet and tell the server to deploy. The server's authorized_keys
+  # pins this key to the deploy command, so the key can't do anything else.
+  deploy:
+    if: github.event_name == 'push'
+    needs: [check, docker]
+    runs-on: ubuntu-latest
+    concurrency: deploy
+    steps:
+      - uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+      - env:
+          KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ vars.DEPLOY_USER }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
+          # Trusting the scanned host key is safe here: the tailnet already authenticates the server.
+          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts
+          ssh -i ~/.ssh/deploy "$DEPLOY_USER@$HOST"
