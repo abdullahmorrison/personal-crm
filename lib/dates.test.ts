@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { isDate, localToday, longDate, monthGrid, monthLabel, shiftMonth, shortDate, shortMonth } from "./dates";
+import { dayLabel, isDate, localToday, longDate, monthGrid, monthLabel, shiftMonth, shortDate, shortMonth } from "./dates";
 
 describe("dates", () => {
   it("formats calendar days without shifting them", () => {
@@ -33,6 +33,17 @@ describe("localToday", () => {
     vi.setSystemTime(new Date("2026-10-22T20:30:00Z")); // already the 23rd in Tokyo
     process.env.TZ = "Asia/Tokyo";
     expect(localToday()).toBe("2026-10-23");
+  });
+});
+
+describe("dayLabel", () => {
+  afterEach(() => vi.useRealTimers());
+
+  it("adds the year only outside the current one", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-27T12:00:00Z"));
+    expect(dayLabel("2026-02-03")).toBe("Feb 3");
+    expect(dayLabel("2025-12-31")).toBe("Dec 31, 2025");
   });
 });
 
