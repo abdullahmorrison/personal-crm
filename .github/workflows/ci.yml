@@ -68,6 +68,7 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           echo "$KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
+          # Port 2222: Tailscale SSH takes port 22 on the tailnet, and it ignores authorized_keys.
           # Trusting the scanned host key is safe here: the tailnet already authenticates the server.
-          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts
-          ssh -i ~/.ssh/deploy "$DEPLOY_USER@$HOST"
+          ssh-keyscan -p 2222 -H "$HOST" >> ~/.ssh/known_hosts
+          ssh -p 2222 -i ~/.ssh/deploy "$DEPLOY_USER@$HOST"
