@@ -15,7 +15,7 @@ describe("createActivity", () => {
   it("rejects a blank name or an unknown icon", () => {
     const db = openDb(":memory:");
     expect(() => createActivity(db, { name: "  ", icon: "dices" })).toThrow("needs a name");
-    expect(() => createActivity(db, { name: "Chess", icon: "chess" })).toThrow("Unknown icon");
+    expect(() => createActivity(db, { name: "Chess", icon: "not-an-icon" })).toThrow("Unknown icon");
   });
 
   it("fails clearly when someone added is gone", () => {
