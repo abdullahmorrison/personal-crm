@@ -118,7 +118,9 @@ function IconPicker({ current, onPick, onClose }: { current: string; onPick: (ke
             className="min-w-0 flex-1 bg-transparent text-[0.9375rem] text-ink outline-none placeholder:text-muted"
           />
         </label>
-        <div className="mt-5 grid max-h-[50dvh] grid-cols-6 gap-2 overflow-y-auto">
+        {/* On phones the sheet keeps its height while searching: if it shrank with the results, it would
+            sink behind the keyboard. content-start keeps the rows at the top instead of stretching them. */}
+        <div className="mt-5 grid h-[50dvh] grid-cols-6 content-start gap-2 overflow-y-auto desk:h-auto desk:max-h-[50dvh]">
           {icons.map((key) => (
             <button
               key={key}
