@@ -1,41 +1,29 @@
-import { useId } from "react";
-
 type Props = {
-  /** Height in px; the mark is 1.5 times as wide. */
+  /** Height in px; the mark is 22/13 as wide. */
   size?: number;
-  /** "splash" draws the mark once; "loader" draws it, pulls the thread through, and repeats. */
+  /** "splash" grows the mark once; "loader" grows it, holds, shrinks it back, and repeats. */
   motion?: "none" | "splash" | "loader";
   label?: string;
   className?: string;
 };
 
-/** The Temory mark: a knotted thread woven under, then over, the bar of a T. */
+/** The Temory mark: closeness bands rising from you, as on the People screen, with two people placed in them. */
 export function TemoryMark({ size = 32, motion = "none", label = "Temory", className = "" }: Props) {
-  const mask = `temory-under-${useId().replace(/[^\w-]/g, "")}`;
   const motionClass = motion === "none" ? "" : `temory-mark-${motion}`;
   return (
     <svg
-      viewBox="2 16.67 92 61.33"
-      width={size * 1.5}
+      viewBox="4 28 88 52"
+      width={(size * 22) / 13}
       height={size}
       role="img"
       aria-label={label}
       className={`temory-mark ${motionClass} ${className}`}
     >
-      {/* Hides the thread where it passes under the bar. */}
-      <mask id={mask} maskUnits="userSpaceOnUse" x="-10" y="-10" width="120" height="120">
-        <rect x="-10" y="-10" width="120" height="120" fill="#fff" />
-        <circle cx="40" cy="38" r="10" fill="#000" />
-      </mask>
-      <path className="bar" pathLength={1} d="M14 38 H78" />
-      <g mask={`url(#${mask})`}>
-        <path
-          className="thread"
-          pathLength={1}
-          d="M14 38 C20 20 32 20 40 38 C44 50 42 70 50 70 C58 70 56 50 60 38 C68 20 80 20 86 38"
-        />
-      </g>
-      <circle className="knot" cx="14" cy="38" r="7" />
+      <path className="band band-3" d="M4 80 A44 44 0 0 1 92 80 Z" />
+      <path className="band band-2" d="M18 80 A30 30 0 0 1 78 80 Z" />
+      <path className="band band-1" d="M32 80 A16 16 0 0 1 64 80 Z" />
+      <circle className="person person-1" cx="24" cy="52" r="5.5" />
+      <circle className="person person-2" cx="66" cy="34" r="4.5" />
     </svg>
   );
 }
