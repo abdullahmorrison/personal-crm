@@ -9,7 +9,7 @@ export function BackLink({ href, label, everywhere }: { href: string; label: str
       aria-label={label}
       className={`-ml-1 inline-flex self-start rounded-full p-1 text-ink transition-colors hover:bg-surface ${everywhere ? "" : "desk:hidden"}`}
     >
-      <ChevronLeft size={24} />
+      <ChevronLeft size="1.5rem" />
     </Link>
   );
 }

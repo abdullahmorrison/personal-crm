@@ -28,22 +28,22 @@ async function Profile({ params }: { params: Promise<{ id: string }> }) {
 
       <div className="mt-6 flex flex-col items-center gap-1.5 text-center desk:flex-row desk:gap-4 desk:text-left">
         <span
-          className={`flex size-22 shrink-0 items-center justify-center rounded-full font-serif text-[32px] shadow-(--shadow-avatar) ring-2 ring-halo ${color.fill} ${color.ink}`}
+          className={`flex size-22 shrink-0 items-center justify-center rounded-full font-serif text-[2rem] shadow-(--shadow-avatar) ring-2 ring-halo ${color.fill} ${color.ink}`}
         >
           {initials(person.name)}
         </span>
         <div>
-          <h1 className="mt-2 text-[28px] font-medium desk:mt-0 desk:text-2xl">{person.name}</h1>
-          <p className="text-[13px] text-muted">{tierLabel(person.closeness)}</p>
+          <h1 className="mt-2 text-[1.75rem] font-medium desk:mt-0 desk:text-2xl">{person.name}</h1>
+          <p className="text-[0.8125rem] text-muted">{tierLabel(person.closeness)}</p>
         </div>
       </div>
 
       <section className="mt-10 flex flex-col gap-2.5">
         <SectionLabel>Notes</SectionLabel>
         {person.notes ? (
-          <p className="font-serif text-[17px] leading-[27px] whitespace-pre-line">{person.notes}</p>
+          <p className="font-serif text-[1.0625rem] leading-[1.6875rem] whitespace-pre-line">{person.notes}</p>
         ) : (
-          <Link href={`/people/${person.id}/edit`} className="font-serif text-[17px] text-muted/70 hover:text-muted">
+          <Link href={`/people/${person.id}/edit`} className="font-serif text-[1.0625rem] text-muted/70 hover:text-muted">
             Add notes about {firstName(person.name)}…
           </Link>
         )}
@@ -65,7 +65,7 @@ async function Profile({ params }: { params: Promise<{ id: string }> }) {
             ))}
           </div>
         ) : (
-          <Link href="/write" className="font-serif text-[17px] text-muted/70 hover:text-muted">
+          <Link href="/write" className="font-serif text-[1.0625rem] text-muted/70 hover:text-muted">
             No moments with {firstName(person.name)} yet. Write one…
           </Link>
         )}

@@ -36,7 +36,7 @@ export function LogButton({ className = "" }: { className?: string }) {
       href="/write"
       className={`flex items-center justify-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-medium text-on-accent shadow-(--shadow-cta) transition hover:brightness-110 active:scale-[0.98] outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-paper ${className}`}
     >
-      <PenLine size={18} />
+      <PenLine size="1.125rem" />
       Log a moment
     </Link>
   );
@@ -76,9 +76,9 @@ function TabBarLinks({ path }: { path: Path }) {
           <Link
             key={href}
             href={href}
-            className={`flex flex-1 flex-col items-center gap-1 rounded-lg text-[11px] transition-colors active:bg-surface outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-0 ${on ? "font-medium text-accent" : "text-muted hover:text-ink"}`}
+            className={`flex flex-1 flex-col items-center gap-1 rounded-lg text-[0.6875rem] transition-colors active:bg-surface outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-0 ${on ? "font-medium text-accent" : "text-muted hover:text-ink"}`}
           >
-            <Icon size={22} />
+            <Icon size="1.375rem" />
             {label}
           </Link>
         );
@@ -90,8 +90,8 @@ function TabBarLinks({ path }: { path: Path }) {
 /** Desktop: left sidebar. */
 export function Sidebar() {
   return (
-    <aside className="sticky top-0 hidden h-viewport w-60 shrink-0 flex-col gap-6 border-r border-line px-5 py-7 desk:flex">
-      <Link href="/" className="flex items-center gap-2 text-[17px] font-medium">
+    <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-6 border-r border-line px-5 py-7 desk:flex">
+      <Link href="/" className="flex items-center gap-2 text-[1.0625rem] font-medium">
         <span aria-hidden="true">
           <TemoryMark size={24} />
         </span>
@@ -122,9 +122,9 @@ function SidebarLink({ href, label, Icon, on, className = "" }: SidebarLinkProps
   return (
     <Link
       href={href}
-      className={`flex items-center gap-3 rounded-[10px] px-3 py-2.5 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-0 ${on ? "bg-surface font-medium text-ink" : "text-muted hover:bg-surface/60 hover:text-ink"} ${className}`}
+      className={`flex items-center gap-3 rounded-[0.625rem] px-3 py-2.5 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-0 ${on ? "bg-surface font-medium text-ink" : "text-muted hover:bg-surface/60 hover:text-ink"} ${className}`}
     >
-      <Icon size={20} className={on ? "text-accent" : ""} />
+      <Icon size="1.25rem" className={on ? "text-accent" : ""} />
       {label}
     </Link>
   );

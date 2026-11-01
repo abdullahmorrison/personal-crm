@@ -43,7 +43,7 @@ export function WithPeople({
   };
 
   return (
-    <div className="relative flex flex-wrap items-center gap-1.5 text-[13px]">
+    <div className="relative flex flex-wrap items-center gap-1.5 text-[0.8125rem]">
       {label && <span className="text-muted">{label}</span>}
       {chosen.map((id) => {
         const p = byId.get(id);
@@ -73,7 +73,7 @@ export function WithPeople({
             className={`group flex items-center gap-1 rounded-full px-2.5 py-0.5 font-medium transition-[filter] hover:brightness-95 ${c.fill} ${c.ink}`}
           >
             {p.name}
-            <X size={12} className="opacity-50 group-hover:opacity-100" />
+            <X size="0.75rem" className="opacity-50 group-hover:opacity-100" />
           </button>
         );
       })}
@@ -97,7 +97,7 @@ export function WithPeople({
         />
       ) : (
         <button type="button" onClick={() => setOpen(true)} className="flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-accent hover:bg-surface">
-          <Plus size={13} />
+          <Plus size="0.8125rem" />
           someone
         </button>
       )}

@@ -25,8 +25,8 @@ async function Activity({ params }: { params: Promise<{ id: string }> }) {
       <div className="mt-6 flex items-center gap-4">
         <ActivityBadge icon={activity.icon} size="lg" />
         <div className="min-w-0">
-          <h1 className="text-[28px] font-medium desk:text-2xl">{activity.name}</h1>
-          <p className="text-[13px] text-muted">
+          <h1 className="text-[1.75rem] font-medium desk:text-2xl">{activity.name}</h1>
+          <p className="text-[0.8125rem] text-muted">
             {activity.people.length} {activity.people.length === 1 ? "person" : "people"}
           </p>
         </div>
@@ -40,21 +40,21 @@ async function Activity({ params }: { params: Promise<{ id: string }> }) {
             return (
               <li key={p.id}>
                 <Link href={`/people/${p.id}`} className="-mx-2 flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-surface/60">
-                  <span className={`flex size-10 shrink-0 items-center justify-center rounded-full font-serif text-[15px] ring-2 ring-halo ${c.fill} ${c.ink}`}>
+                  <span className={`flex size-10 shrink-0 items-center justify-center rounded-full font-serif text-[0.9375rem] ring-2 ring-halo ${c.fill} ${c.ink}`}>
                     {initials(p.name)}
                   </span>
                   <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate text-[15px]">{p.name}</span>
+                    <span className="truncate text-[0.9375rem]">{p.name}</span>
                     <span className="text-xs text-muted">{tierLabel(p.closeness)}</span>
                   </span>
-                  <ChevronRight size={18} className="shrink-0 text-muted" />
+                  <ChevronRight size="1.125rem" className="shrink-0 text-muted" />
                 </Link>
               </li>
             );
           })}
         </ul>
-        <Link href={edit} className="flex items-center gap-0.5 self-start text-[13px] text-accent hover:underline">
-          <Plus size={13} />
+        <Link href={edit} className="flex items-center gap-0.5 self-start text-[0.8125rem] text-accent hover:underline">
+          <Plus size="0.8125rem" />
           someone
         </Link>
       </section>
@@ -62,9 +62,9 @@ async function Activity({ params }: { params: Promise<{ id: string }> }) {
       <section className="mt-10 flex flex-col gap-2.5">
         <SectionLabel>Notes</SectionLabel>
         {activity.notes ? (
-          <p className="font-serif text-[17px] leading-[27px] whitespace-pre-line">{activity.notes}</p>
+          <p className="font-serif text-[1.0625rem] leading-[1.6875rem] whitespace-pre-line">{activity.notes}</p>
         ) : (
-          <Link href={edit} className="font-serif text-[17px] text-muted/70 hover:text-muted">
+          <Link href={edit} className="font-serif text-[1.0625rem] text-muted/70 hover:text-muted">
             Add notes about {activity.name}…
           </Link>
         )}

@@ -14,8 +14,8 @@ async function Timeline({ params }: { params: Promise<{ id: string }> }) {
   return (
     <Panel close={{ href: "/people", label: "Close" }}>
       <BackLink href={`/people/${person.id}`} label={`Back to ${person.name}`} everywhere />
-      <h1 className="mt-6 text-[28px] font-medium desk:text-2xl">{person.name}</h1>
-      <p className="mt-1 text-[13px] text-muted">
+      <h1 className="mt-6 text-[1.75rem] font-medium desk:text-2xl">{person.name}</h1>
+      <p className="mt-1 text-[0.8125rem] text-muted">
         {tierLabel(person.closeness)} · {moments.length} {moments.length === 1 ? "moment" : "moments"}
       </p>
       {groupByMonth(moments).map((month) => (

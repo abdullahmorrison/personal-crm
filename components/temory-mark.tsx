@@ -1,5 +1,5 @@
 type Props = {
-  /** Height in px; the mark is 22/13 as wide. */
+  /** Height in px at the default 16px font; it grows with the app's font size. The mark is 22/13 as wide. */
   size?: number;
   /** "splash" grows the mark once; "loader" grows it, holds, shrinks it back, and repeats. */
   motion?: "none" | "splash" | "loader";
@@ -13,8 +13,8 @@ export function TemoryMark({ size = 32, motion = "none", label = "Temory", class
   return (
     <svg
       viewBox="4 28 88 52"
-      width={(size * 22) / 13}
-      height={size}
+      width={`${(size * 22) / 13 / 16}rem`}
+      height={`${size / 16}rem`}
       role="img"
       aria-label={label}
       className={`temory-mark ${motionClass} ${className}`}

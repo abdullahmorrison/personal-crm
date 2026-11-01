@@ -11,7 +11,6 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { fromDoc, mentionMatches, toDoc } from "@/lib/mentions";
 import { firstName } from "@/lib/names";
 import { personColor } from "@/lib/person-colors";
-import { zoomOf } from "@/lib/zoom";
 
 type Person = { id: number; name: string; color: number };
 
@@ -90,7 +89,7 @@ export function MomentEditor({ people, defaultValue = "", autoFocus, onMention, 
     ],
     editorProps: {
       attributes: {
-        class: "min-h-48 font-serif text-[19px] leading-8 outline-none",
+        class: "min-h-48 font-serif text-[1.1875rem] leading-8 outline-none",
         "aria-label": "What happened?",
       },
     },
@@ -130,16 +129,15 @@ function Menu({
   useLayoutEffect(() => {
     const at = props.clientRect?.();
     const box = wrap.current?.getBoundingClientRect();
-    if (!at || !box || !wrap.current || !ref.current) return;
-    const zoom = zoomOf(wrap.current);
-    const x = (at.left - box.left) / zoom;
-    const left = Math.max(0, Math.min(x - 12, wrap.current.offsetWidth - ref.current.offsetWidth));
-    setPlace({ top: (at.bottom - box.top) / zoom + 10, left, caret: x - left });
+    if (!at || !box || !ref.current) return;
+    const x = at.left - box.left;
+    const left = Math.max(0, Math.min(x - 12, box.width - ref.current.offsetWidth));
+    setPlace({ top: at.bottom - box.top + 10, left, caret: x - left });
   }, [props, wrap]);
 
   return (
-    <div ref={ref} role="listbox" aria-label="Mention someone" className="absolute z-10 flex gap-0.5 rounded-[10px] bg-ink p-1 font-sans text-[13px] text-paper shadow-(--shadow-pop)" style={{ top: place.top, left: place.left }}>
-      <svg width="12" height="6" viewBox="0 0 12 6" aria-hidden className="absolute -top-1.5 fill-ink" style={{ left: place.caret }}>
+    <div ref={ref} role="listbox" aria-label="Mention someone" className="absolute z-10 flex gap-0.5 rounded-[0.625rem] bg-ink p-1 font-sans text-[0.8125rem] text-paper shadow-(--shadow-pop)" style={{ top: place.top, left: place.left }}>
+      <svg width="0.75rem" height="0.375rem" viewBox="0 0 12 6" aria-hidden className="absolute -top-1.5 fill-ink" style={{ left: place.caret }}>
         <path d="M0 6 6 0l6 6z" />
       </svg>
       {props.items.map((p, i) => (
@@ -150,7 +148,7 @@ function Menu({
           aria-selected={i === selected}
           onMouseDown={(e) => e.preventDefault()} // keep the caret in the text
           onClick={() => onPick(p)}
-          className={`rounded-[7px] px-2.5 py-1 whitespace-nowrap ${i === selected ? "bg-paper/15 font-medium" : "hover:bg-paper/10"}`}
+          className={`rounded-[0.4375rem] px-2.5 py-1 whitespace-nowrap ${i === selected ? "bg-paper/15 font-medium" : "hover:bg-paper/10"}`}
         >
           {p.name}
         </button>

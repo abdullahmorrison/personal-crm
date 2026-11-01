@@ -31,7 +31,7 @@ export function ActivityForm({ action, people, submitLabel, defaults }: Props) {
             aria-label="Pick an icon"
             className="flex size-12 shrink-0 items-center justify-center rounded-xl border border-line bg-surface text-ink transition-colors hover:border-muted"
           >
-            <ActivityIcon icon={icon} size={22} strokeWidth={1.75} />
+            <ActivityIcon icon={icon} size="1.375rem" strokeWidth={1.75} />
           </button>
           <input type="hidden" name="icon" value={icon} />
           <input
@@ -105,20 +105,20 @@ function IconPicker({ current, onPick, onClose }: { current: string; onPick: (ke
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-medium">Pick an icon</h2>
           <button type="button" onClick={onClose} aria-label="Close" className="rounded-full p-1.5 text-muted transition-colors hover:bg-surface hover:text-ink">
-            <X size={20} />
+            <X size="1.25rem" />
           </button>
         </div>
         <label className="mt-5 flex items-center gap-2.5 rounded-xl bg-surface px-3.5 py-2.5 text-muted">
-          <Search size={18} />
+          <Search size="1.125rem" />
           <input
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search icons"
-            className="min-w-0 flex-1 bg-transparent text-[15px] text-ink outline-none placeholder:text-muted"
+            className="min-w-0 flex-1 bg-transparent text-[0.9375rem] text-ink outline-none placeholder:text-muted"
           />
         </label>
-        <div className="mt-5 grid max-h-[calc(50dvh/var(--zoom))] grid-cols-6 gap-2 overflow-y-auto">
+        <div className="mt-5 grid max-h-[50dvh] grid-cols-6 gap-2 overflow-y-auto">
           {icons.map((key) => (
             <button
               key={key}
@@ -130,7 +130,7 @@ function IconPicker({ current, onPick, onClose }: { current: string; onPick: (ke
                 key === current ? "border-accent bg-clay text-accent" : "border-transparent text-ink hover:bg-surface"
               }`}
             >
-              <ActivityIcon icon={key} size={22} strokeWidth={1.75} />
+              <ActivityIcon icon={key} size="1.375rem" strokeWidth={1.75} />
             </button>
           ))}
           {icons.length === 0 && <p className="col-span-6 py-6 text-center text-sm text-muted">No icons match</p>}

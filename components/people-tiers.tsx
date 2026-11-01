@@ -10,7 +10,6 @@ import { firstName, initials } from "@/lib/names";
 import { personColor } from "@/lib/person-colors";
 import { layoutTiers, tierAt, type LayoutPerson } from "@/lib/tier-layout";
 import { ACQUAINTANCE, PROSPECT, TIERS, tierLabel } from "@/lib/tiers";
-import { zoomOf } from "@/lib/zoom";
 
 // Everything is placed with transforms, which the browser can move without redoing layout.
 // When the side panel opens or closes, the arcs snap to their new size with no animation.
@@ -49,7 +48,7 @@ export function PeopleTiers({ people: saved }: { people: LayoutPerson[] }) {
   const [, startTransition] = useTransition();
   const [drag, setDrag] = useState<Drag | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
+  const [size, setSize] = useState<{ width: number; height: number; scale: number } | null>(null);
 
   useEffect(() => {
     const el = ref.current;
@@ -58,7 +57,9 @@ export function PeopleTiers({ people: saved }: { people: LayoutPerson[] }) {
       const { width, height } = entry.contentRect;
       // Next.js keeps this screen mounted but hidden (0×0) while you're on another tab. Keep the
       // last real layout, or the arcs would glide in from a collapsed one when you come back.
-      if (width > 0 && height > 0) setSize({ width, height });
+      // The root font size grows with the window (app/globals.css); the arcs' px sizes grow with it.
+      const scale = parseFloat(getComputedStyle(document.documentElement).fontSize) / 16;
+      if (width > 0 && height > 0) setSize({ width, height, scale });
     });
     observer.observe(el);
     return () => observer.disconnect();
@@ -72,10 +73,11 @@ export function PeopleTiers({ people: saved }: { people: LayoutPerson[] }) {
 
   const desk = useIsDesk();
   const selectedId = Number(usePathname().match(/^\/people\/(\d+)/)?.[1]);
-  const top = desk ? 110 : 96;
-  const bottom = desk ? 40 : 150;
-  const extra = !size || desk ? 0 : Math.max(0, (size.height - top - bottom) / (TIERS.length - 1) - PEEK);
-  const layout = size && layoutTiers(people, { width: size.width, height: size.height + extra, tiers: TIERS, top, bottom });
+  const scale = size?.scale ?? 1;
+  const top = (desk ? 110 : 96) * scale;
+  const bottom = (desk ? 40 : 150) * scale;
+  const extra = !size || desk ? 0 : Math.max(0, (size.height - top - bottom) / (TIERS.length - 1) - PEEK * scale);
+  const layout = size && layoutTiers(people, { width: size.width, height: size.height + extra, tiers: TIERS, top, bottom, scale });
   const known = people.filter((p) => p.closeness !== PROSPECT).length;
   const prospects = people.length - known;
 
@@ -90,8 +92,7 @@ export function PeopleTiers({ people: saved }: { people: LayoutPerson[] }) {
 
   const local = (p: Point) => {
     const box = canvas.current!.getBoundingClientRect();
-    const zoom = zoomOf(canvas.current!);
-    return { x: (p.clientX - box.left) / zoom, y: (p.clientY - box.top) / zoom };
+    return { x: p.clientX - box.left, y: p.clientY - box.top };
   };
   const dragTo = (person: LayoutPerson, size: number, p: Point) => {
     const point = local(p);
@@ -110,7 +111,7 @@ export function PeopleTiers({ people: saved }: { people: LayoutPerson[] }) {
   };
 
   return (
-    <div ref={ref} className="relative -mb-28 h-viewport overflow-hidden desk:mb-0">
+    <div ref={ref} className="relative -mb-28 h-dvh overflow-hidden desk:mb-0">
       <div ref={scroller} className="absolute inset-0 overflow-y-auto overscroll-contain [scrollbar-width:none]">
         <div ref={canvas} style={{ height: size ? size.height + extra : undefined }} className="relative overflow-hidden">
           {layout && (
@@ -143,7 +144,7 @@ export function PeopleTiers({ people: saved }: { people: LayoutPerson[] }) {
                 <p
                   key={band.tier}
                   style={{ transform: `${at(layout.center.x, band.labelY)} translateX(-50%)` }}
-                  className={`absolute top-0 left-0 whitespace-nowrap text-[10px] font-medium tracking-[0.14em] uppercase ${drag?.tier === band.tier ? "text-accent" : "text-muted"}`}
+                  className={`absolute top-0 left-0 whitespace-nowrap text-[0.625rem] font-medium tracking-[0.14em] uppercase ${drag?.tier === band.tier ? "text-accent" : "text-muted"}`}
                 >
                   {band.label} · {band.count}
                 </p>
@@ -157,6 +158,7 @@ export function PeopleTiers({ people: saved }: { people: LayoutPerson[] }) {
                     x={b.x}
                     y={b.y}
                     size={b.size}
+                    pad={20 * scale}
                     delay={stagger(i)}
                     selected={b.person.id === selectedId}
                     lifted={drag?.person.id === b.person.id}
@@ -179,7 +181,7 @@ export function PeopleTiers({ people: saved }: { people: LayoutPerson[] }) {
                       >
                         +{b.hidden}
                       </span>
-                      <span className="text-[11px] text-muted">more</span>
+                      <span className="text-[0.6875rem] text-muted">more</span>
                     </div>
                   </Link>
                 ),
@@ -196,14 +198,14 @@ export function PeopleTiers({ people: saved }: { people: LayoutPerson[] }) {
             </span>
           )}
 
-          {people.length === 0 && layout && <EmptyPrompt bands={layout.bands} />}
+          {people.length === 0 && layout && <EmptyPrompt bands={layout.bands} scale={scale} />}
         </div>
       </div>
 
       {error && (
         <p
           role="alert"
-          className="absolute inset-x-0 bottom-40 mx-auto w-fit rounded-full bg-ink px-4 py-2 text-[13px] text-paper shadow-lg desk:bottom-10"
+          className="absolute inset-x-0 bottom-40 mx-auto w-fit rounded-full bg-ink px-4 py-2 text-[0.8125rem] text-paper shadow-lg desk:bottom-10"
         >
           {error}
         </p>
@@ -213,7 +215,7 @@ export function PeopleTiers({ people: saved }: { people: LayoutPerson[] }) {
       <header className="absolute inset-x-0 top-0 flex items-center justify-between bg-linear-to-b from-paper from-80% to-transparent px-7 pt-12 pb-4 desk:bg-none desk:px-10 desk:pt-8 desk:pb-0">
         <div>
           <h1 className="hidden text-2xl font-medium desk:block">People</h1>
-          <p className="text-[13px] text-muted">
+          <p className="text-[0.8125rem] text-muted">
             {known} {known === 1 ? "person" : "people"}
             {prospects > 0 && ` · ${prospects} ${prospects === 1 ? "prospect" : "prospects"}`}
           </p>
@@ -221,10 +223,10 @@ export function PeopleTiers({ people: saved }: { people: LayoutPerson[] }) {
         <div className="flex gap-2">
           {/* Desktop reaches Settings from the sidebar. */}
           <Link href="/settings" aria-label="Settings" className={`${HEADER_BUTTON} desk:hidden`}>
-            <Settings size={18} />
+            <Settings size="1.125rem" />
           </Link>
           <Link href="/people/new" aria-label="Add person" className={`${HEADER_BUTTON} desk:px-4 desk:py-2`}>
-            <Plus size={18} />
+            <Plus size="1.125rem" />
             <span className="hidden desk:inline">Add person</span>
           </Link>
         </div>
@@ -237,15 +239,15 @@ const HEADER_BUTTON =
   "flex items-center gap-1.5 rounded-full border border-line bg-paper p-2.5 text-sm font-medium transition-colors hover:border-muted hover:bg-surface";
 
 /** Centred inside a middle band, clear of the tier labels and arc edges. */
-function EmptyPrompt({ bands }: { bands: { labelY: number }[] }) {
+function EmptyPrompt({ bands, scale }: { bands: { labelY: number }[]; scale: number }) {
   const i = Math.floor(bands.length / 2);
-  const top = bands[i].labelY + 22;
-  const bottom = bands[i - 1].labelY - 12;
+  const top = bands[i].labelY + 22 * scale;
+  const bottom = bands[i - 1].labelY - 12 * scale;
   return (
     <div style={{ top, height: bottom - top }} className="absolute inset-x-0 flex flex-col items-center justify-center gap-1.5 px-8 text-center">
-      <p className="font-serif text-[22px]">No one here yet.</p>
-      <p className="text-[13px] text-muted">Add the people in your life, closest at the bottom.</p>
-      <Link href="/people/new" className="mt-1 text-[13px] font-medium text-accent underline-offset-4 hover:underline">
+      <p className="font-serif text-[1.375rem]">No one here yet.</p>
+      <p className="text-[0.8125rem] text-muted">Add the people in your life, closest at the bottom.</p>
+      <Link href="/people/new" className="mt-1 text-[0.8125rem] font-medium text-accent underline-offset-4 hover:underline">
         Add your first person
       </Link>
     </div>
@@ -275,6 +277,7 @@ type BubbleProps = {
   x: number;
   y: number;
   size: number;
+  pad: number; // room each side of the bubble for its name
   delay: number;
   selected: boolean;
   lifted: boolean;
@@ -294,14 +297,14 @@ function face(person: LayoutPerson, selected = false) {
   };
 }
 
-function PersonBubble({ person, x, y, size, delay, selected, lifted, onDrag, onDrop, onCancel }: BubbleProps) {
+function PersonBubble({ person, x, y, size, pad, delay, selected, lifted, onDrag, onDrop, onCancel }: BubbleProps) {
   const look = face(person, selected);
   const drag = usePressDrag({ onStart: onDrag, onMove: onDrag, onDrop, onCancel });
   return (
     <Link
       href={`/people/${person.id}`}
       {...drag}
-      style={{ transform: at(x - size / 2 - 20, y - size / 2), width: size + 40 }}
+      style={{ transform: at(x - size / 2 - pad, y - size / 2), width: size + 2 * pad }}
       className={`group absolute top-0 left-0 touch-none rounded-lg outline-none select-none [-webkit-touch-callout:none] ${lifted ? "opacity-30" : ""}`}
     >
       {/* The entrance animation lives on an inner element so it doesn't fight the glide. */}

@@ -24,8 +24,8 @@ export async function ActivityList() {
     <div className="mx-auto max-w-xl px-7 pt-14 pb-10 desk:px-10 desk:pt-8">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-medium desk:text-[28px]">Activities</h1>
-          <p className="mt-1 text-[13px] text-muted">
+          <h1 className="text-2xl font-medium desk:text-[1.75rem]">Activities</h1>
+          <p className="mt-1 text-[0.8125rem] text-muted">
             {activities.length} {activities.length === 1 ? "activity" : "activities"}
             {activities.length > 1 && " · most people first"}
           </p>
@@ -33,18 +33,18 @@ export async function ActivityList() {
         <Link
           href="/activities/new"
           aria-label="Add activity"
-          className="flex items-center gap-1.5 rounded-full border border-line p-2.5 text-ink transition-colors hover:bg-surface desk:px-3.5 desk:py-2 desk:text-[13px] desk:font-medium"
+          className="flex items-center gap-1.5 rounded-full border border-line p-2.5 text-ink transition-colors hover:bg-surface desk:px-3.5 desk:py-2 desk:text-[0.8125rem] desk:font-medium"
         >
-          <Plus size={18} className="desk:size-4" />
+          <Plus size="1.125rem" className="desk:size-4" />
           <span className="hidden desk:inline">Add activity</span>
         </Link>
       </div>
 
       {activities.length === 0 ? (
         <div className="mt-40 text-center desk:mt-24">
-          <p className="font-serif text-[22px]">Nothing here yet.</p>
-          <p className="mt-1.5 text-[13px] text-muted">Pickleball, game nights, long walks: add the things you do with people.</p>
-          <Link href="/activities/new" className="mt-2 inline-block text-[13px] font-medium text-accent underline-offset-4 hover:underline">
+          <p className="font-serif text-[1.375rem]">Nothing here yet.</p>
+          <p className="mt-1.5 text-[0.8125rem] text-muted">Pickleball, game nights, long walks: add the things you do with people.</p>
+          <Link href="/activities/new" className="mt-2 inline-block text-[0.8125rem] font-medium text-accent underline-offset-4 hover:underline">
             Add your first activity
           </Link>
         </div>
@@ -55,17 +55,17 @@ export async function ActivityList() {
               <RowLink href={`/activities/${a.id}`}>
                 <ActivityBadge icon={a.icon} />
                 <span className="flex min-w-0 flex-1 flex-col gap-1">
-                  <span className="truncate text-[17px] font-medium">{a.name}</span>
+                  <span className="truncate text-[1.0625rem] font-medium">{a.name}</span>
                   {a.people.length > 0 ? (
-                    <span className="flex items-center gap-2 text-[13px] text-muted">
+                    <span className="flex items-center gap-2 text-[0.8125rem] text-muted">
                       <Faces people={a.people} />
                       <span className="truncate">{names(a.people)}</span>
                     </span>
                   ) : (
-                    <span className="text-[13px] text-muted">No one yet</span>
+                    <span className="text-[0.8125rem] text-muted">No one yet</span>
                   )}
                 </span>
-                <ChevronRight size={18} className="shrink-0 text-muted" />
+                <ChevronRight size="1.125rem" className="shrink-0 text-muted" />
               </RowLink>
             </li>
           ))}

@@ -59,38 +59,10 @@
   color-scheme: dark;
 }
 
-/* Wide screens: scale the whole app up, so it isn't lost on a big monitor. Two things zoom doesn't cover, so code
-   handles them: viewport units ignore it (use h-viewport and min-h-viewport below, not dvh), and screen coordinates come
-   back zoomed (lib/zoom.ts). */
-:root {
-  --zoom: 1;
-  zoom: var(--zoom);
-}
-@media (min-width: 1600px) {
-  :root {
-    --zoom: 1.1;
-  }
-}
-@media (min-width: 1800px) {
-  :root {
-    --zoom: 1.2;
-  }
-}
-@media (min-width: 1960px) {
-  :root {
-    --zoom: 1.3;
-  }
-}
-@media (min-width: 2400px) {
-  :root {
-    --zoom: 1.5;
-  }
-}
-@utility h-viewport {
-  height: calc(100dvh / var(--zoom));
-}
-@utility min-h-viewport {
-  min-height: calc(100dvh / var(--zoom));
+/* Sizes are in rem, so the whole app grows with this: the browser's default up to a 1440px window, 130% at 2000px,
+   at most 150%. Anything sized in JS px (the People arcs) scales by the same ratio. */
+html {
+  font-size: clamp(1rem, 0.857vw + 0.229rem, 1.5rem);
 }
 
 /* Shadows: warm brown in light mode, black in dark. */
