@@ -35,6 +35,10 @@
   --color-band-3: light-dark(#f3eee6, #21201e);
   --color-band-4: light-dark(#f6f2eb, #1e1d1b);
 
+  /* The Temory mark's outer two bands; the innermost is the accent. */
+  --color-mark-mid: light-dark(#e08a66, #9a4a2c);
+  --color-mark-soft: light-dark(#f0c3ad, #5a3324);
+
   --animate-pop-in: pop-in 320ms cubic-bezier(0.2, 0.8, 0.3, 1.2) both;
 
   --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
@@ -85,66 +89,72 @@ body {
   color: color-mix(in srgb, var(--color-muted) 60%, transparent);
 }
 
-/* Temory mark (components/temory-mark.tsx). Bar and thread use pathLength=1, so a dash offset of 1 hides them. */
-.temory-mark .bar {
-  fill: none;
-  stroke: var(--color-ink);
-  stroke-width: 8;
-  stroke-linecap: round;
+/* Temory mark (components/temory-mark.tsx). Bands grow from the bottom centre, people from their own centre. */
+.temory-mark {
+  overflow: visible; /* room for the bands to overshoot as they grow */
 }
-.temory-mark .thread {
-  fill: none;
-  stroke: var(--color-accent);
-  stroke-width: 7;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.temory-mark .band {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
 }
-.temory-mark .knot {
+.temory-mark .band-1 {
   fill: var(--color-accent);
+}
+.temory-mark .band-2 {
+  fill: var(--color-mark-mid);
+}
+.temory-mark .band-3 {
+  fill: var(--color-mark-soft);
+}
+.temory-mark .person {
+  fill: var(--color-ink);
   transform-box: fill-box;
   transform-origin: center;
 }
-.temory-mark .bar,
-.temory-mark .thread {
-  stroke-dasharray: 1 2;
-}
 
-/* Splash: bar, knot, then thread, once. The name rises in after (components/splash.tsx). */
-.temory-mark-splash .bar {
-  animation: temory-draw 0.55s cubic-bezier(0.65, 0, 0.35, 1) both;
+/* Splash: the bands grow out from you, innermost first, then the people pop in, once. The name rises in after
+   (components/splash.tsx). */
+.temory-mark-splash .band {
+  animation: temory-pop 0.6s cubic-bezier(0.3, 1.4, 0.5, 1) both;
 }
-.temory-mark-splash .knot {
-  animation: temory-pop 0.4s cubic-bezier(0.3, 1.6, 0.5, 1) 0.4s both;
+.temory-mark-splash .band-2 {
+  animation-delay: 0.15s;
 }
-.temory-mark-splash .thread {
-  animation: temory-draw 1.3s cubic-bezier(0.65, 0, 0.35, 1) 0.55s both;
+.temory-mark-splash .band-3 {
+  animation-delay: 0.3s;
+}
+.temory-mark-splash .person {
+  animation: temory-pop 0.4s cubic-bezier(0.3, 1.6, 0.5, 1) 0.7s both;
+}
+.temory-mark-splash .person-2 {
+  animation-delay: 0.85s;
 }
 .temory-splash .temory-mark {
-  animation: temory-lift 0.5s cubic-bezier(0.65, 0, 0.35, 1) 1.8s both;
+  animation: temory-lift 0.5s cubic-bezier(0.65, 0, 0.35, 1) 1.4s both;
 }
 .temory-splash-name {
-  animation: temory-rise 0.5s cubic-bezier(0.65, 0, 0.35, 1) 1.9s both;
+  animation: temory-rise 0.5s cubic-bezier(0.65, 0, 0.35, 1) 1.5s both;
 }
 
-/* Loader: draw in, hold, pull the thread through, repeat. */
-.temory-mark-loader .bar {
-  animation: temory-loop-bar 2.8s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+/* Loader: the splash on repeat, like a radar. Each band pops out, holds, then ripples outward and fades, innermost
+   first; the inner band is back before the outer has gone. The people share the outer band's delay and fade just
+   before it, the lower one first. */
+.temory-mark-loader .band {
+  animation: temory-loop-band 3s infinite both;
 }
-.temory-mark-loader .knot {
-  animation: temory-loop-knot 2.8s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+.temory-mark-loader .band-2 {
+  animation-delay: 0.25s;
 }
-.temory-mark-loader .thread {
-  animation: temory-loop-thread 2.8s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+.temory-mark-loader .band-3 {
+  animation-delay: 0.5s;
+}
+.temory-mark-loader .person-1 {
+  animation: temory-loop-person-1 3s 0.5s infinite both;
+}
+.temory-mark-loader .person-2 {
+  animation: temory-loop-person-2 3s 0.5s infinite both;
 }
 
-@keyframes temory-draw {
-  from {
-    stroke-dashoffset: 1.02;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
 @keyframes temory-pop {
   from {
     transform: scale(0);
@@ -161,48 +171,55 @@ body {
     transform: translateY(8px);
   }
 }
-@keyframes temory-loop-bar {
+@keyframes temory-loop-band {
   0% {
-    stroke-dashoffset: 1.02;
+    transform: scale(0);
+    animation-timing-function: cubic-bezier(0.3, 1.4, 0.5, 1);
   }
-  15%,
-  78% {
-    stroke-dashoffset: 0;
+  18%,
+  58% {
+    opacity: 1;
+    transform: scale(1);
+    animation-timing-function: cubic-bezier(0.3, 0, 0.6, 1);
   }
-  94%,
+  84%,
   100% {
-    stroke-dashoffset: -1.02;
+    opacity: 0;
+    transform: scale(1.3);
   }
 }
-@keyframes temory-loop-knot {
+@keyframes temory-loop-person-1 {
   0%,
   10% {
     transform: scale(0);
-  }
-  18% {
-    transform: scale(1.15);
+    animation-timing-function: cubic-bezier(0.3, 1.6, 0.5, 1);
   }
   22%,
-  80% {
+  52% {
+    opacity: 1;
     transform: scale(1);
+    animation-timing-function: cubic-bezier(0.3, 0, 0.6, 1);
   }
-  92%,
+  70%,
   100% {
-    transform: scale(0);
+    opacity: 0;
   }
 }
-@keyframes temory-loop-thread {
+@keyframes temory-loop-person-2 {
   0%,
-  16% {
-    stroke-dashoffset: 1.02;
+  15% {
+    transform: scale(0);
+    animation-timing-function: cubic-bezier(0.3, 1.6, 0.5, 1);
   }
-  62%,
-  74% {
-    stroke-dashoffset: 0;
+  27%,
+  56% {
+    opacity: 1;
+    transform: scale(1);
+    animation-timing-function: cubic-bezier(0.3, 0, 0.6, 1);
   }
-  96%,
+  74%,
   100% {
-    stroke-dashoffset: -1.02;
+    opacity: 0;
   }
 }
 

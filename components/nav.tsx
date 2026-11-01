@@ -93,7 +93,7 @@ export function Sidebar() {
     <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-6 border-r border-line px-5 py-7 desk:flex">
       <Link href="/" className="flex items-center gap-2 text-[17px] font-medium">
         <span aria-hidden="true">
-          <TemoryMark size={28} />
+          <TemoryMark size={24} />
         </span>
         Temory
       </Link>
