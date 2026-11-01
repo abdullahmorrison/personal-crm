@@ -8,6 +8,6 @@ describe("searchIcons", () => {
   });
 
   it("returns every icon for an empty query", () => {
-    expect(searchIcons(" ").length).toBeGreaterThan(200);
+    expect(searchIcons(" ").length).toBeGreaterThan(280);
   });
 });
