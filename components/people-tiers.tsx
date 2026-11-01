@@ -10,6 +10,7 @@ import { firstName, initials } from "@/lib/names";
 import { personColor } from "@/lib/person-colors";
 import { layoutTiers, tierAt, type LayoutPerson } from "@/lib/tier-layout";
 import { ACQUAINTANCE, PROSPECT, TIERS, tierLabel } from "@/lib/tiers";
+import { zoomOf } from "@/lib/zoom";
 
 // Everything is placed with transforms, which the browser can move without redoing layout.
 // When the side panel opens or closes, the arcs snap to their new size with no animation.
@@ -89,7 +90,8 @@ export function PeopleTiers({ people: saved }: { people: LayoutPerson[] }) {
 
   const local = (p: Point) => {
     const box = canvas.current!.getBoundingClientRect();
-    return { x: p.clientX - box.left, y: p.clientY - box.top };
+    const zoom = zoomOf(canvas.current!);
+    return { x: (p.clientX - box.left) / zoom, y: (p.clientY - box.top) / zoom };
   };
   const dragTo = (person: LayoutPerson, size: number, p: Point) => {
     const point = local(p);
@@ -108,7 +110,7 @@ export function PeopleTiers({ people: saved }: { people: LayoutPerson[] }) {
   };
 
   return (
-    <div ref={ref} className="relative -mb-28 h-dvh overflow-hidden desk:mb-0">
+    <div ref={ref} className="relative -mb-28 h-viewport overflow-hidden desk:mb-0">
       <div ref={scroller} className="absolute inset-0 overflow-y-auto overscroll-contain [scrollbar-width:none]">
         <div ref={canvas} style={{ height: size ? size.height + extra : undefined }} className="relative overflow-hidden">
           {layout && (

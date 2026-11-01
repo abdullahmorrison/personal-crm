@@ -11,6 +11,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { fromDoc, mentionMatches, toDoc } from "@/lib/mentions";
 import { firstName } from "@/lib/names";
 import { personColor } from "@/lib/person-colors";
+import { zoomOf } from "@/lib/zoom";
 
 type Person = { id: number; name: string; color: number };
 
@@ -129,10 +130,11 @@ function Menu({
   useLayoutEffect(() => {
     const at = props.clientRect?.();
     const box = wrap.current?.getBoundingClientRect();
-    if (!at || !box || !ref.current) return;
-    const x = at.left - box.left;
-    const left = Math.max(0, Math.min(x - 12, box.width - ref.current.offsetWidth));
-    setPlace({ top: at.bottom - box.top + 10, left, caret: x - left });
+    if (!at || !box || !wrap.current || !ref.current) return;
+    const zoom = zoomOf(wrap.current);
+    const x = (at.left - box.left) / zoom;
+    const left = Math.max(0, Math.min(x - 12, wrap.current.offsetWidth - ref.current.offsetWidth));
+    setPlace({ top: (at.bottom - box.top) / zoom + 10, left, caret: x - left });
   }, [props, wrap]);
 
   return (

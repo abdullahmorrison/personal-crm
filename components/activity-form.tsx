@@ -118,7 +118,7 @@ function IconPicker({ current, onPick, onClose }: { current: string; onPick: (ke
             className="min-w-0 flex-1 bg-transparent text-[15px] text-ink outline-none placeholder:text-muted"
           />
         </label>
-        <div className="mt-5 grid max-h-[50dvh] grid-cols-6 gap-2 overflow-y-auto">
+        <div className="mt-5 grid max-h-[calc(50dvh/var(--zoom))] grid-cols-6 gap-2 overflow-y-auto">
           {icons.map((key) => (
             <button
               key={key}
