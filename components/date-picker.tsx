@@ -55,11 +55,11 @@ export function DatePicker({ date, today, onPick, onClose }: Props) {
       ref={ref}
       role="dialog"
       aria-label="Pick a date"
-      className="absolute top-full left-0 z-10 mt-3 -ml-1 w-[310px] max-w-[calc(100vw-2rem)] rounded-2xl border border-line bg-raised px-3.5 pt-3.5 pb-3 font-sans shadow-(--shadow-pop)"
+      className="absolute top-full left-0 z-10 mt-3 -ml-1 w-[19.375rem] max-w-[calc(100vw-2rem)] rounded-2xl border border-line bg-raised px-3.5 pt-3.5 pb-3 font-sans shadow-(--shadow-pop)"
     >
       <div className="flex items-center">
         <button type="button" onClick={() => setMonth(shiftMonth(month, -step))} aria-label={`Previous ${unit}`} className="rounded-full p-1.5 hover:bg-surface">
-          <ChevronLeft size={20} />
+          <ChevronLeft size="1.25rem" />
         </button>
         <div className="flex flex-1 justify-center" aria-live="polite">
           {heading.zoom ? (
@@ -75,7 +75,7 @@ export function DatePicker({ date, today, onPick, onClose }: Props) {
           )}
         </div>
         <button type="button" onClick={() => setMonth(shiftMonth(month, step))} aria-label={`Next ${unit}`} className="rounded-full p-1.5 hover:bg-surface">
-          <ChevronRight size={20} />
+          <ChevronRight size="1.25rem" />
         </button>
       </div>
 
@@ -127,7 +127,7 @@ export function DatePicker({ date, today, onPick, onClose }: Props) {
         </div>
       )}
 
-      <button type="button" onClick={() => onPick(today)} className="mt-1 rounded-full px-1.5 py-1 text-[13px] font-medium text-accent hover:bg-surface">
+      <button type="button" onClick={() => onPick(today)} className="mt-1 rounded-full px-1.5 py-1 text-[0.8125rem] font-medium text-accent hover:bg-surface">
         Today
       </button>
     </div>
@@ -138,7 +138,7 @@ function Days({ month, date, today, onPick }: { month: string; date: string; tod
   const { blanks, days } = monthGrid(month);
   return (
     <>
-      <div className="mt-2 grid grid-cols-7 text-center text-[10px] font-medium tracking-[0.14em] text-muted" aria-hidden>
+      <div className="mt-2 grid grid-cols-7 text-center text-[0.625rem] font-medium tracking-[0.14em] text-muted" aria-hidden>
         {WEEKDAYS.map((d, i) => (
           <span key={i}>{d}</span>
         ))}

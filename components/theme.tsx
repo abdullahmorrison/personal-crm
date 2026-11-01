@@ -85,11 +85,11 @@ export function ThemePicker() {
   const theme = useSyncExternalStore(subscribe, saved, () => "system");
   return (
     <>
-      <div role="radiogroup" aria-label="Theme" className="grid grid-cols-3 gap-1 rounded-[14px] bg-surface p-1">
+      <div role="radiogroup" aria-label="Theme" className="grid grid-cols-3 gap-1 rounded-[0.875rem] bg-surface p-1">
         {OPTIONS.map(({ value, label, Icon }) => (
           <label
             key={value}
-            className="flex flex-col items-center gap-1.5 rounded-[10px] py-3 text-[13px] text-muted transition-colors hover:text-ink has-checked:bg-raised has-checked:font-medium has-checked:text-ink has-checked:shadow-(--shadow-avatar) has-focus-visible:ring-2 has-focus-visible:ring-ink"
+            className="flex flex-col items-center gap-1.5 rounded-[0.625rem] py-3 text-[0.8125rem] text-muted transition-colors hover:text-ink has-checked:bg-raised has-checked:font-medium has-checked:text-ink has-checked:shadow-(--shadow-avatar) has-focus-visible:ring-2 has-focus-visible:ring-ink"
           >
             <input
               type="radio"
@@ -99,7 +99,7 @@ export function ThemePicker() {
               onChange={() => choose(value)}
               className="sr-only"
             />
-            <Icon size={20} />
+            <Icon size="1.25rem" />
             {label}
           </label>
         ))}

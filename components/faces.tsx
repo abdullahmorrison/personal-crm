@@ -14,7 +14,7 @@ export function Faces({ people, max = 3 }: { people: Face[]; max?: number }) {
           <span
             key={p.id}
             title={p.name}
-            className={`flex size-6 items-center justify-center rounded-full font-serif text-[10px] ring-[1.5px] ring-paper ${c.fill} ${c.ink}`}
+            className={`flex size-6 items-center justify-center rounded-full font-serif text-[0.625rem] ring-[1.5px] ring-paper ${c.fill} ${c.ink}`}
           >
             {initials(p.name)}
           </span>

@@ -59,6 +59,12 @@
   color-scheme: dark;
 }
 
+/* Sizes are in rem, so the whole app grows with this: the browser's default up to a 1440px window, 130% at 2000px,
+   at most 150%. Anything sized in JS px (the People arcs) scales by the same ratio. */
+html {
+  font-size: clamp(1rem, 0.857vw + 0.229rem, 1.5rem);
+}
+
 /* Shadows: warm brown in light mode, black in dark. */
 :root {
   --shadow-avatar: 0 2px 6px light-dark(rgb(90 74 58 / 0.1), rgb(0 0 0 / 0.35));

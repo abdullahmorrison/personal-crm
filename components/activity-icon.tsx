@@ -66,7 +66,7 @@ export function ActivityIcon({ icon, ...props }: { icon: string } & LucideProps)
 export function ActivityBadge({ icon, size = "md" }: { icon: string; size?: "md" | "lg" }) {
   return (
     <span className={`flex shrink-0 items-center justify-center bg-surface text-ink ${size === "lg" ? "size-14 rounded-2xl" : "size-10 rounded-xl"}`}>
-      <ActivityIcon icon={icon} size={size === "lg" ? 24 : 20} strokeWidth={1.75} />
+      <ActivityIcon icon={icon} size={size === "lg" ? "1.5rem" : "1.25rem"} strokeWidth={1.75} />
     </span>
   );
 }

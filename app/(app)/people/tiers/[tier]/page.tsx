@@ -20,8 +20,8 @@ async function TierList({ params }: { params: Promise<{ tier: string }> }) {
   return (
     <Panel close={{ href: "/people", label: "Close" }}>
       <BackLink href="/people" label="Back to people" />
-      <h1 className="mt-6 text-[28px] font-medium desk:mt-0 desk:text-2xl">{tier.plural}</h1>
-      <p className="mt-1 text-[13px] text-muted">
+      <h1 className="mt-6 text-[1.75rem] font-medium desk:mt-0 desk:text-2xl">{tier.plural}</h1>
+      <p className="mt-1 text-[0.8125rem] text-muted">
         {people.length} {people.length === 1 ? "person" : "people"}
       </p>
       <ul className="mt-6 flex flex-col">
@@ -37,7 +37,7 @@ async function TierList({ params }: { params: Promise<{ tier: string }> }) {
                   {initials(p.name)}
                 </span>
                 <span className="flex min-w-0 flex-col">
-                  <span className="truncate text-[15px]">{p.name}</span>
+                  <span className="truncate text-[0.9375rem]">{p.name}</span>
                   <span className="text-xs text-muted">{p.lastMoment ? `Last moment ${dayLabel(p.lastMoment)}` : "No moments yet"}</span>
                 </span>
               </Link>

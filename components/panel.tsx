@@ -11,7 +11,7 @@ export function Panel({ close, children }: { close?: { href: string; label: stri
           aria-label={close.label}
           className="absolute top-7 right-7 hidden rounded-full p-1.5 text-muted transition-colors hover:bg-surface hover:text-ink desk:flex"
         >
-          <X size={20} />
+          <X size="1.25rem" />
         </Link>
       )}
       {children}

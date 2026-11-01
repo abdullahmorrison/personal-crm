@@ -16,7 +16,7 @@ export default function NewActivityPage() {
   return (
     <Panel close={{ href: "/activities", label: "Close" }}>
       <BackLink href="/activities" label="Back to activities" />
-      <h1 className="mt-6 mb-10 pr-10 text-2xl font-medium desk:mt-0 desk:mb-9 desk:text-[22px]">Add an activity</h1>
+      <h1 className="mt-6 mb-10 pr-10 text-2xl font-medium desk:mt-0 desk:mb-9 desk:text-[1.375rem]">Add an activity</h1>
       <Suspense>
         <Form />
       </Suspense>

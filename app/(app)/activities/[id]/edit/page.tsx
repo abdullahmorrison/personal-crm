@@ -14,7 +14,7 @@ async function Edit({ params }: { params: Promise<{ id: string }> }) {
   return (
     <Panel close={{ href: back, label: `Back to ${activity.name}` }}>
       <BackLink href={back} label={`Back to ${activity.name}`} />
-      <h1 className="mt-6 mb-10 pr-10 text-2xl font-medium desk:mt-0 desk:mb-9 desk:text-[22px]">Edit {activity.name}</h1>
+      <h1 className="mt-6 mb-10 pr-10 text-2xl font-medium desk:mt-0 desk:mb-9 desk:text-[1.375rem]">Edit {activity.name}</h1>
       <ActivityForm
         action={editActivity.bind(null, activity.id)}
         people={listPeople(getDb())}

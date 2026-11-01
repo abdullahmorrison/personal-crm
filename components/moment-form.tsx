@@ -35,9 +35,9 @@ export function MomentForm({ action, people, defaults, closeHref }: Props) {
     <form action={formAction} className="flex flex-col">
       <div className="flex items-center justify-between">
         <Link href={closeHref} aria-label="Close" className="-ml-1.5 rounded-full p-1.5 text-ink transition-colors hover:bg-surface">
-          <X size={22} />
+          <X size="1.375rem" />
         </Link>
-        <button disabled={pending || !date} className="rounded-full px-3 py-1.5 text-[15px] font-medium text-accent transition-colors hover:bg-surface disabled:opacity-50">
+        <button disabled={pending || !date} className="rounded-full px-3 py-1.5 text-[0.9375rem] font-medium text-accent transition-colors hover:bg-surface disabled:opacity-50">
           {pending ? "Saving…" : "Save"}
         </button>
       </div>
@@ -97,7 +97,7 @@ function DateHeading({ date, today, onChange }: { date: string; today: string; o
         onClick={() => setOpen(!open)}
         aria-expanded={open}
         disabled={!date}
-        className={`rounded-lg font-serif text-[26px] italic underline-offset-4 decoration-line hover:underline ${open ? "underline" : ""}`}
+        className={`rounded-lg font-serif text-[1.625rem] italic underline-offset-4 decoration-line hover:underline ${open ? "underline" : ""}`}
       >
         {date ? longDate(date) : " "}
       </button>
