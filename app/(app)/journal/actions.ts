@@ -13,6 +13,8 @@ function read(form: FormData) {
     date: String(form.get("date") ?? ""),
     personIds: form.getAll("personIds").map(Number),
     viaMention: form.getAll("viaMention").map(Number),
+    activityIds: form.getAll("activityIds").map(Number),
+    activityViaMention: form.getAll("activityViaMention").map(Number),
   };
 }
 

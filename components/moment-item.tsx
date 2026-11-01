@@ -21,7 +21,7 @@ export function MomentItem({ moment, about, href = `/journal/${moment.id}/edit` 
           <span>{shortDate(moment.date)}</span>
           {others.length > 0 && <span>with {others.map((p) => firstName(p.name)).join(", ")}</span>}
         </span>
-        <span className="font-serif text-[1.0625rem] leading-[1.8125rem] whitespace-pre-line"><MomentBody body={moment.body} people={moment.mentioned} /></span>
+        <span className="font-serif text-[1.0625rem] leading-[1.8125rem] whitespace-pre-line"><MomentBody body={moment.body} people={moment.mentioned} activities={moment.mentionedActivities} /></span>
       </Link>
     );
   }
@@ -34,7 +34,7 @@ export function MomentItem({ moment, about, href = `/journal/${moment.id}/edit` 
           {moment.people.length ? moment.people.map((p) => firstName(p.name)).join(", ") : "Just me"}
         </span>
       </span>
-      <span className="font-serif text-lg leading-[1.8125rem] whitespace-pre-line"><MomentBody body={moment.body} people={moment.mentioned} /></span>
+      <span className="font-serif text-lg leading-[1.8125rem] whitespace-pre-line"><MomentBody body={moment.body} people={moment.mentioned} activities={moment.mentionedActivities} /></span>
     </Link>
   );
 }
