@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fromDoc, linkedAfterHandEdit, mentionMatches, mentionedIds, mentionToken, parseBody, syncWith, toDoc } from "./mentions";
+import { activityToken, fromDoc, linkedAfterHandEdit, mentionedActivityIds, mentionMatches, mentionedIds, mentionToken, parseBody, syncWith, toDoc } from "./mentions";
 
 describe("parseBody", () => {
   it("splits text and mentions in order", () => {
@@ -10,6 +10,18 @@ describe("parseBody", () => {
       { mention: { id: 2, label: "Priya Shah" } },
       { text: "." },
     ]);
+  });
+
+  it("reads activities apart from mentions", () => {
+    expect(parseBody("/[Board games](activity:3) with @[Sam](person:1)")).toEqual([
+      { activity: { id: 3, label: "Board games" } },
+      { text: " with " },
+      { mention: { id: 1, label: "Sam" } },
+    ]);
+  });
+
+  it("leaves a plain / and mismatched tokens alone", () => {
+    expect(parseBody("w/ Sam, and/or @[Sam](activity:1) /[Sam](person:1)")).toEqual([{ text: "w/ Sam, and/or @[Sam](activity:1) /[Sam](person:1)" }]);
   });
 
   it("leaves a plain @ alone", () => {
@@ -23,7 +35,19 @@ describe("mentionToken", () => {
   });
 });
 
+describe("mentionedActivityIds", () => {
+  it("lists each activity once, and no people", () => {
+    expect(mentionedActivityIds(`${activityToken(3, "Hiking")} @[Sam](person:1) ${activityToken(3, "Hiking")} ${activityToken(4, "Pickleball")}`)).toEqual([3, 4]);
+  });
+});
+
 describe("toDoc and fromDoc", () => {
+  it("round-trip activities as / mentions", () => {
+    const body = "/[Board games](activity:3) with @[Sam Rivera](person:1)";
+    expect(toDoc(body).content?.[0].content?.[0]).toEqual({ type: "mention", attrs: { id: "3", label: "Board games", mentionSuggestionChar: "/" } });
+    expect(fromDoc(toDoc(body))).toBe(body);
+  });
+
   it("round-trip lines, blank lines, and mentions", () => {
     const body = "Coffee with @[Sam Rivera](person:1).\n\nThen a walk.";
     expect(fromDoc(toDoc(body))).toBe(body);

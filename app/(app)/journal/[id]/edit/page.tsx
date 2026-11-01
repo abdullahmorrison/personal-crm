@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { editMoment, removeMoment } from "@/app/(app)/journal/actions";
-import { peopleForPicker } from "@/app/(app)/journal/data";
+import { activitiesForPicker, peopleForPicker } from "@/app/(app)/journal/data";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { MomentForm } from "@/components/moment-form";
 import { getDb } from "@/lib/db";
-import { getMoment } from "@/lib/moments";
+import { formDefaults, getMoment } from "@/lib/moments";
 
 async function Edit({ params }: { params: Promise<{ id: string }> }) {
   const people = await peopleForPicker(); // also waits for the request, before reading the moment
@@ -17,13 +17,9 @@ async function Edit({ params }: { params: Promise<{ id: string }> }) {
       <MomentForm
         action={editMoment.bind(null, moment.id, "/journal")}
         people={people}
+        activities={await activitiesForPicker()}
         closeHref="/journal"
-        defaults={{
-          body: moment.body,
-          date: moment.date,
-          personIds: moment.people.map((p) => p.id),
-          viaMention: moment.people.filter((p) => p.viaMention).map((p) => p.id),
-        }}
+        defaults={formDefaults(moment)}
       />
       <div className="mt-14 border-t border-line pt-6">
         <ConfirmDelete label="Delete this moment" warning="Delete this moment? This can't be undone." action={removeMoment.bind(null, moment.id, "/journal")} />

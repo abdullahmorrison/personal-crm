@@ -6,22 +6,32 @@ import { useActionState, useCallback, useRef, useState, useSyncExternalStore } f
 import type { MomentFormState } from "@/app/(app)/journal/actions";
 import { DatePicker } from "@/components/date-picker";
 import { MomentEditor } from "@/components/moment-editor";
+import { WithActivities } from "@/components/with-activities";
 import { WithPeople } from "@/components/with-people";
 import { localToday, longDate } from "@/lib/dates";
-import { linkedAfterHandEdit, mentionedIds, syncWith } from "@/lib/mentions";
+import { linkedAfterHandEdit, mentionedActivityIds, mentionedIds, syncWith } from "@/lib/mentions";
 
 type Person = { id: number; name: string; color: number };
+type Activity = { id: number; name: string; icon: string };
 
 type Props = {
   action: (prev: MomentFormState, form: FormData) => Promise<MomentFormState>;
   people: Person[];
-  defaults?: { body: string; date: string; personIds: number[]; viaMention: number[] };
+  activities: Activity[];
+  defaults?: { body: string; date: string; personIds: number[]; viaMention: number[]; activityIds: number[]; activityViaMention: number[] };
   closeHref: string;
 };
 
+type Picked = { chosen: number[]; linked: number[] };
+
+// Shared by "with" and "doing": a mention adds to both lists, a hand edit unties it, a tap locks it in.
+const mentioned = (s: Picked, id: number): Picked => (s.chosen.includes(id) ? s : { chosen: [...s.chosen, id], linked: [...s.linked, id] });
+const handEdited = (s: Picked, ids: number[]): Picked => ({ chosen: ids, linked: linkedAfterHandEdit(s.linked, s.chosen, ids) });
+const locked = (s: Picked, id: number): Picked => ({ ...s, linked: s.linked.filter((x) => x !== id) });
+
 const noSubscribe = () => () => {};
 
-export function MomentForm({ action, people, defaults, closeHref }: Props) {
+export function MomentForm({ action, people, activities, defaults, closeHref }: Props) {
   const [state, formAction, pending] = useActionState(action, {});
   // Today comes from the viewer's clock, so it's read in the browser, never at build time.
   const today = useSyncExternalStore(noSubscribe, localToday, () => "");
@@ -30,6 +40,8 @@ export function MomentForm({ action, people, defaults, closeHref }: Props) {
   // Who was there, and which of them a mention put there (so removing the mention removes them).
   const [withState, setWith] = useState({ chosen: defaults?.personIds ?? [], linked: defaults?.viaMention ?? [] });
   const { chosen } = withState;
+  // What it was spent doing, tracked the same way.
+  const [doing, setDoing] = useState({ chosen: defaults?.activityIds ?? [], linked: defaults?.activityViaMention ?? [] });
 
   return (
     <form action={formAction} className="flex flex-col">
@@ -52,8 +64,17 @@ export function MomentForm({ action, people, defaults, closeHref }: Props) {
           people={people}
           chosen={chosen}
           linked={withState.linked}
-          onChange={(ids) => setWith((w) => ({ chosen: ids, linked: linkedAfterHandEdit(w.linked, w.chosen, ids) }))}
-          onLock={(id) => setWith((w) => ({ ...w, linked: w.linked.filter((x) => x !== id) }))}
+          onChange={(ids) => setWith((w) => handEdited(w, ids))}
+          onLock={(id) => setWith((w) => locked(w, id))}
+        />
+      </div>
+      <div className="mt-2">
+        <WithActivities
+          activities={activities}
+          chosen={doing.chosen}
+          linked={doing.linked}
+          onChange={(ids) => setDoing((d) => handEdited(d, ids))}
+          onLock={(id) => setDoing((d) => locked(d, id))}
         />
       </div>
       {chosen.map((id) => (
@@ -62,13 +83,24 @@ export function MomentForm({ action, people, defaults, closeHref }: Props) {
       {withState.linked.map((id) => (
         <input key={id} type="hidden" name="viaMention" value={id} />
       ))}
+      {doing.chosen.map((id) => (
+        <input key={id} type="hidden" name="activityIds" value={id} />
+      ))}
+      {doing.linked.map((id) => (
+        <input key={id} type="hidden" name="activityViaMention" value={id} />
+      ))}
 
       <MomentEditor
         people={people}
+        activities={activities}
         defaultValue={defaults?.body}
         autoFocus={!defaults}
-        onMention={(p) => setWith((w) => (w.chosen.includes(p.id) ? w : { chosen: [...w.chosen, p.id], linked: [...w.linked, p.id] }))}
-        onChange={(body) => setWith((w) => ({ ...w, chosen: syncWith(w.chosen, w.linked, mentionedIds(body)) }))}
+        onMention={(p) => setWith((w) => mentioned(w, p.id))}
+        onActivity={(a) => setDoing((d) => mentioned(d, a.id))}
+        onChange={(body) => {
+          setWith((w) => ({ ...w, chosen: syncWith(w.chosen, w.linked, mentionedIds(body)) }));
+          setDoing((d) => ({ ...d, chosen: syncWith(d.chosen, d.linked, mentionedActivityIds(body)) }));
+        }}
       />
 
       {state.error && (

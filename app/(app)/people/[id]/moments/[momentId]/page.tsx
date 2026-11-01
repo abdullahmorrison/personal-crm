@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { editMoment, removeMoment } from "@/app/(app)/journal/actions";
-import { peopleForPicker } from "@/app/(app)/journal/data";
+import { activitiesForPicker, peopleForPicker } from "@/app/(app)/journal/data";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { MomentForm } from "@/components/moment-form";
 import { Panel } from "@/components/panel";
 import { getDb } from "@/lib/db";
-import { getMoment } from "@/lib/moments";
+import { formDefaults, getMoment } from "@/lib/moments";
 import { personFromParams } from "../../data";
 
 // A moment opened from a person's profile or timeline, edited in their panel. Closing or saving goes back there.
@@ -22,13 +22,9 @@ async function Edit({ params, searchParams }: PageProps<"/people/[id]/moments/[m
       <MomentForm
         action={editMoment.bind(null, moment.id, back)}
         people={people}
+        activities={await activitiesForPicker()}
         closeHref={back}
-        defaults={{
-          body: moment.body,
-          date: moment.date,
-          personIds: moment.people.map((p) => p.id),
-          viaMention: moment.people.filter((p) => p.viaMention).map((p) => p.id),
-        }}
+        defaults={formDefaults(moment)}
       />
       <div className="mt-14 border-t border-line pt-6">
         <ConfirmDelete label="Delete this moment" warning="Delete this moment? This can't be undone." action={removeMoment.bind(null, moment.id, back)} />

@@ -1,10 +1,10 @@
 import { Suspense } from "react";
 import { addMoment } from "@/app/(app)/journal/actions";
-import { peopleForPicker } from "@/app/(app)/journal/data";
+import { activitiesForPicker, peopleForPicker } from "@/app/(app)/journal/data";
 import { MomentForm } from "@/components/moment-form";
 
 async function Write() {
-  return <MomentForm action={addMoment} people={await peopleForPicker()} closeHref="/journal" />;
+  return <MomentForm action={addMoment} people={await peopleForPicker()} activities={await activitiesForPicker()} closeHref="/journal" />;
 }
 
 export default function WritePage() {

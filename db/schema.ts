@@ -74,3 +74,16 @@ export const activityPeople = sqliteTable(
   // The primary key covers lookups by activity; the index covers a person's activities.
   (t) => [primaryKey({ columns: [t.activityId, t.personId] }), index("activity_people_person_id").on(t.personId)],
 );
+
+// What a moment was spent doing.
+export const entryActivities = sqliteTable(
+  "entry_activities",
+  {
+    entryId: integer("entry_id").notNull().references(() => entries.id, { onDelete: "cascade" }),
+    activityId: integer("activity_id").notNull().references(() => activities.id, { onDelete: "cascade" }),
+    // There only because the text names it with /: deleting that takes it out.
+    viaMention: integer("via_mention", { mode: "boolean" }).notNull().default(false),
+  },
+  // The primary key covers lookups by entry; the index covers an activity's moments.
+  (t) => [primaryKey({ columns: [t.entryId, t.activityId] }), index("entry_activities_activity_id").on(t.activityId)],
+);

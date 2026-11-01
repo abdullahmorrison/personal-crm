@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { entryPeople } from "@/db/schema";
+import { entryActivities, entryPeople } from "@/db/schema";
+import { createActivity, deleteActivity } from "./activities";
 import { openDb } from "./db";
-import { createMoment, deleteMoment, getMoment, groupByMonth, listMoments, updateMoment } from "./moments";
+import { createMoment, deleteMoment, formDefaults, getMoment, groupByMonth, listMoments, updateMoment } from "./moments";
 import { createPerson, deletePerson } from "./people";
 
 function setup() {
@@ -37,6 +38,42 @@ describe("createMoment", () => {
     expect(() => createMoment(db, { body: "Hi", date: "2026-02-30", personIds: [] })).toThrow("Pick a date");
     expect(() => createMoment(db, { body: "Hi", date: "2026-10-22", personIds: [999] })).toThrow("no longer exists");
     expect(listMoments(db)).toHaveLength(0);
+  });
+});
+
+describe("activities", () => {
+  it("saves what a moment was spent doing, and what its text names", () => {
+    const { db } = setup();
+    const hiking = createActivity(db, { name: "Hiking", icon: "mountain" });
+    const games = createActivity(db, { name: "Board games", icon: "dices" });
+    const m = createMoment(db, {
+      body: "/[Board games](activity:" + games.id + ") all night",
+      date: "2026-10-22",
+      personIds: [],
+      activityIds: [hiking.id, games.id, games.id],
+      activityViaMention: [games.id, 999],
+    });
+    const saved = getMoment(db, m.id)!;
+    expect(saved.activities).toEqual([
+      { id: games.id, name: "Board games", icon: "dices", viaMention: true },
+      { id: hiking.id, name: "Hiking", icon: "mountain", viaMention: false },
+    ]);
+    expect(saved.mentionedActivities).toEqual([{ id: games.id, name: "Board games" }]);
+    expect(formDefaults(saved)).toMatchObject({ activityIds: [games.id, hiking.id], activityViaMention: [games.id] });
+  });
+
+  it("rejects unknown activities, replaces them on edit, and drops deleted ones", () => {
+    const { db } = setup();
+    const hiking = createActivity(db, { name: "Hiking", icon: "mountain" });
+    const games = createActivity(db, { name: "Board games", icon: "dices" });
+    expect(() => createMoment(db, { body: "Hi", date: "2026-10-22", personIds: [], activityIds: [999] })).toThrow("no longer exists");
+    const m = createMoment(db, { body: "Hi", date: "2026-10-22", personIds: [], activityIds: [hiking.id] });
+    updateMoment(db, m.id, { body: "Hi", date: "2026-10-22", personIds: [], activityIds: [games.id] });
+    expect(getMoment(db, m.id)?.activities.map((a) => a.id)).toEqual([games.id]);
+    deleteActivity(db, games.id);
+    expect(getMoment(db, m.id)?.activities).toEqual([]);
+    deleteMoment(db, m.id);
+    expect(db.select().from(entryActivities).all()).toHaveLength(0);
   });
 });
 
