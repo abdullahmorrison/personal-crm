@@ -44,7 +44,7 @@ export function layoutTiers(people: LayoutPerson[], { width, height, top, bottom
   tiers.forEach((tier, i) => {
     const outerRadius = innerRadius + bandHeight * (i + 1);
     const size = bubbleSize(i, scale);
-    const inTier = people.filter((p) => p.closeness === tier.value).sort((a, b) => a.name.localeCompare(b.name));
+    const inTier = people.filter((p) => p.closeness === tier.value); // in the order given, left to right
     bands.push({ tier: tier.value, label: tier.band ?? tier.label, count: inTier.length, outerRadius, labelY: center.y - outerRadius + 12 * scale });
     if (inTier.length === 0) return;
 
