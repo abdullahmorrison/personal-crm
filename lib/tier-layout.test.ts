@@ -26,6 +26,12 @@ describe("layoutTiers", () => {
     expect(bubbles.some((b) => b.kind === "overflow")).toBe(false);
   });
 
+  it("places a tier's people left to right in the order given", () => {
+    const given = people(3, 1).reverse();
+    const shown = layoutTiers(given, phone).bubbles.flatMap((b) => (b.kind === "person" ? [b] : []));
+    expect(shown.sort((a, b) => a.x - b.x).map((b) => b.person.id)).toEqual(given.map((p) => p.id));
+  });
+
   it("adds an overflow bubble when a tier is full", () => {
     const { bubbles } = layoutTiers(people(30, 4), phone);
     const shown = bubbles.filter((b) => b.kind === "person").length;

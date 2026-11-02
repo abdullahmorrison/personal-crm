@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { openDb } from "./db";
 import { entries, entryPeople } from "@/db/schema";
-import { createPerson, deletePerson, getPerson, listTier, moveToTier, updatePerson } from "./people";
+import { createPerson, deletePerson, getPerson, listPeople, listTier, moveToTier, updatePerson } from "./people";
 import { NEW_PERSON_CLOSENESS } from "./tiers";
 
 describe("createPerson", () => {
@@ -89,8 +89,20 @@ describe("moveToTier", () => {
   });
 });
 
+describe("listPeople", () => {
+  it("puts those in the most moments first, then A to Z ignoring case", () => {
+    const db = openDb(":memory:");
+    const [zoe, abe, ben] = ["Zoe", "abe", "Ben"].map((name) => createPerson(db, { name }));
+    for (let i = 0; i < 2; i++) {
+      const entry = db.insert(entries).values({ body: "Hi", date: "2026-01-05" }).returning().get();
+      db.insert(entryPeople).values({ entryId: entry.id, personId: zoe.id }).run();
+    }
+    expect(listPeople(db).map((p) => p.id)).toEqual([zoe.id, abe.id, ben.id]);
+  });
+});
+
 describe("listTier", () => {
-  it("lists one tier A to Z, with each person's latest moment", () => {
+  it("lists one tier by how many moments each person is in, with their latest", () => {
     const db = openDb(":memory:");
     const [noor, eli, dev] = ["Noor", "Eli", "Dev"].map((name) => createPerson(db, { name }));
     createPerson(db, { name: "Sam", closeness: 1 });
@@ -102,9 +114,9 @@ describe("listTier", () => {
     log("2026-09-01", noor.id);
     log("2026-10-01", dev.id);
     expect(listTier(db, NEW_PERSON_CLOSENESS)).toEqual([
+      { id: noor.id, name: "Noor", color: noor.color, emoji: "", lastMoment: "2026-09-01" },
       { id: dev.id, name: "Dev", color: dev.color, emoji: "", lastMoment: "2026-10-01" },
       { id: eli.id, name: "Eli", color: eli.color, emoji: "", lastMoment: "2026-01-05" },
-      { id: noor.id, name: "Noor", color: noor.color, emoji: "", lastMoment: "2026-09-01" },
     ]);
   });
 });
