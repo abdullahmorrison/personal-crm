@@ -1,4 +1,4 @@
-import { count, eq, max } from "drizzle-orm";
+import { count, desc, eq, max, sql } from "drizzle-orm";
 import { entries, entryPeople, people } from "@/db/schema";
 import type { Db } from "@/lib/db";
 import { nextColor } from "@/lib/person-colors";
@@ -56,23 +56,29 @@ export function getPerson(db: Db, id: number) {
   return db.select().from(people).where(eq(people.id, id)).get();
 }
 
+// Those in the most moments first, then A to Z.
+const byMoments = [desc(count(entryPeople.entryId)), sql`${people.name} collate nocase`];
+
+/** Everyone, those in the most moments first. */
 export function listPeople(db: Db) {
   return db
     .select({ id: people.id, name: people.name, closeness: people.closeness, color: people.color })
     .from(people)
+    .leftJoin(entryPeople, eq(entryPeople.personId, people.id))
+    .groupBy(people.id)
+    .orderBy(...byMoments)
     .all();
 }
 
-/** Everyone in a tier with the date of their latest moment, A to Z like the arcs. */
+/** Everyone in a tier with the date of their latest moment, in the same order as the arcs. */
 export function listTier(db: Db, closeness: number) {
-  const lastMoment = max(entries.date);
   return db
-    .select({ id: people.id, name: people.name, color: people.color, lastMoment })
+    .select({ id: people.id, name: people.name, color: people.color, lastMoment: max(entries.date) })
     .from(people)
     .leftJoin(entryPeople, eq(entryPeople.personId, people.id))
     .leftJoin(entries, eq(entries.id, entryPeople.entryId))
     .where(eq(people.closeness, closeness))
     .groupBy(people.id)
-    .all()
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .orderBy(...byMoments)
+    .all();
 }
