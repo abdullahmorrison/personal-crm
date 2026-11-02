@@ -11,6 +11,7 @@ function read(form: FormData) {
   return {
     name: String(form.get("name") ?? ""),
     closeness: Number(form.get("closeness")),
+    emoji: String(form.get("emoji") ?? ""),
     notes: String(form.get("notes") ?? ""),
   };
 }
