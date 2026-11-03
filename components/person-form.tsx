@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import type { PersonFormState } from "@/app/(app)/people/actions";
 import { SectionLabel } from "@/components/section-label";
 import { NEW_PERSON_CLOSENESS, TIERS } from "@/lib/tiers";
+import { useCloseOnDone } from "@/components/nav-stack";
 
 type Props = {
   action: (prev: PersonFormState, form: FormData) => Promise<PersonFormState>;
@@ -13,6 +14,7 @@ type Props = {
 
 export function PersonForm({ action, submitLabel, defaults }: Props) {
   const [state, formAction, pending] = useActionState(action, {});
+  useCloseOnDone(state);
   return (
     <form action={formAction} className="flex flex-col gap-8">
       <input
