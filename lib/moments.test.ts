@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { entryActivities, entryPeople } from "@/db/schema";
 import { createActivity, deleteActivity } from "./activities";
 import { openDb } from "./db";
-import { createMoment, deleteMoment, formDefaults, getMoment, groupByMonth, listMoments, updateMoment } from "./moments";
+import { createMoment, deleteMoment, formDefaults, getMoment, groupByDay, groupByMonth, listMoments, updateMoment } from "./moments";
 import { createPerson, deletePerson } from "./people";
 
 function setup() {
@@ -38,6 +38,26 @@ describe("createMoment", () => {
     expect(() => createMoment(db, { body: "Hi", date: "2026-02-30", personIds: [] })).toThrow("Pick a date");
     expect(() => createMoment(db, { body: "Hi", date: "2026-10-22", personIds: [999] })).toThrow("no longer exists");
     expect(listMoments(db)).toHaveLength(0);
+  });
+});
+
+describe("time", () => {
+  it("is kept when given and empty when not, and rejects a bad one", () => {
+    const { db } = setup();
+    const timed = createMoment(db, { body: "Ramen", date: "2026-10-20", time: "19:15", personIds: [] });
+    const untimed = createMoment(db, { body: "Lunch", date: "2026-10-20", time: "", personIds: [] });
+    expect(getMoment(db, timed.id)).toMatchObject({ time: "19:15" });
+    expect(formDefaults(getMoment(db, untimed.id))).toMatchObject({ time: "" });
+    expect(() => createMoment(db, { body: "Hi", date: "2026-10-20", time: "25:00", personIds: [] })).toThrow("Pick a time");
+  });
+
+  it("orders a day by time, latest first, with untimed moments after", () => {
+    const { db } = setup();
+    createMoment(db, { body: "No time", date: "2026-10-22", personIds: [] });
+    createMoment(db, { body: "Noon", date: "2026-10-22", time: "12:30", personIds: [] });
+    createMoment(db, { body: "Night", date: "2026-10-22", time: "21:40", personIds: [] });
+    createMoment(db, { body: "Yesterday", date: "2026-10-21", time: "23:00", personIds: [] });
+    expect(listMoments(db).map((m) => m.body)).toEqual(["Night", "Noon", "No time", "Yesterday"]);
   });
 });
 
@@ -169,6 +189,16 @@ describe("groupByMonth", () => {
     expect(groups.map((g) => [g.label, g.moments.length])).toEqual([
       ["October 2026", 2],
       ["September 2026", 1],
+    ]);
+  });
+});
+
+describe("groupByDay", () => {
+  it("groups consecutive moments by day in order", () => {
+    const groups = groupByDay([{ date: "2026-10-22" }, { date: "2026-10-22" }, { date: "2026-10-20" }]);
+    expect(groups.map((g) => [g.key, g.moments.length])).toEqual([
+      ["2026-10-22", 2],
+      ["2026-10-20", 1],
     ]);
   });
 });

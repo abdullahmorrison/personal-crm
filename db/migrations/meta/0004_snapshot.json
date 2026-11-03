@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "5052390f-ba7e-46dc-8c52-ab72f1a7a8a6",
+  "id": "d455b9d2-536a-4edc-a42e-e880cd789416",
   "prevId": "ec2a247e-67a0-4332-ba58-2adeedf119f2",
   "tables": {
     "activities": {
@@ -154,6 +154,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "time": {
+          "name": "time",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "created_at": {
@@ -358,14 +365,6 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
-        },
-        "emoji": {
-          "name": "emoji",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "''"
         },
         "notes": {
           "name": "notes",
