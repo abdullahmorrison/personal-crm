@@ -52,10 +52,10 @@ export function deleteActivity(db: Db, id: number) {
 
 /** Who each activity is with, closest first. */
 function peopleFor(db: Db, activityIds: number[]) {
-  const byActivity = new Map<number, { id: number; name: string; color: number; closeness: number }[]>();
+  const byActivity = new Map<number, { id: number; name: string; color: number; emoji: string; closeness: number }[]>();
   if (!activityIds.length) return byActivity;
   const rows = db
-    .select({ activityId: activityPeople.activityId, id: people.id, name: people.name, color: people.color, closeness: people.closeness })
+    .select({ activityId: activityPeople.activityId, id: people.id, name: people.name, color: people.color, emoji: people.emoji, closeness: people.closeness })
     .from(activityPeople)
     .innerJoin(people, eq(people.id, activityPeople.personId))
     .where(inArray(activityPeople.activityId, activityIds))

@@ -11,6 +11,14 @@ describe("createPerson", () => {
     expect(new Set(colors).size).toBe(6);
   });
 
+  it("keeps one emoji and rejects anything else", () => {
+    const db = openDb(":memory:");
+    expect(createPerson(db, { name: "Sam", emoji: " ⚽ " }).emoji).toBe("⚽");
+    expect(createPerson(db, { name: "Priya" }).emoji).toBe("");
+    expect(() => createPerson(db, { name: "Jo", emoji: "⚽☕" })).toThrow("single emoji");
+    expect(() => createPerson(db, { name: "Jo", emoji: "work" })).toThrow("single emoji");
+  });
+
   it("puts new people in the outermost tier and trims the name", () => {
     const db = openDb(":memory:");
     const p = createPerson(db, { name: "  Noor " });
@@ -106,9 +114,9 @@ describe("listTier", () => {
     log("2026-09-01", noor.id);
     log("2026-10-01", dev.id);
     expect(listTier(db, NEW_PERSON_CLOSENESS)).toEqual([
-      { id: noor.id, name: "Noor", color: noor.color, lastMoment: "2026-09-01" },
-      { id: dev.id, name: "Dev", color: dev.color, lastMoment: "2026-10-01" },
-      { id: eli.id, name: "Eli", color: eli.color, lastMoment: "2026-01-05" },
+      { id: noor.id, name: "Noor", color: noor.color, emoji: "", lastMoment: "2026-09-01" },
+      { id: dev.id, name: "Dev", color: dev.color, emoji: "", lastMoment: "2026-10-01" },
+      { id: eli.id, name: "Eli", color: eli.color, emoji: "", lastMoment: "2026-01-05" },
     ]);
   });
 });

@@ -10,6 +10,7 @@ export const people = sqliteTable("people", {
   name: text("name").notNull(),
   closeness: integer("closeness").notNull(), // 1 = closest; see lib/tiers.ts
   color: integer("color").notNull(), // index into lib/person-colors.ts
+  emoji: text("emoji").notNull().default(""), // one emoji for where you know them from, or ""
   notes: text("notes").notNull().default(""),
   createdAt: createdAt(),
 });

@@ -1,10 +1,12 @@
 import { count, desc, eq, max, sql } from "drizzle-orm";
 import { entries, entryPeople, people } from "@/db/schema";
 import type { Db } from "@/lib/db";
+import { isOneEmoji } from "@/lib/emoji";
 import { nextColor } from "@/lib/person-colors";
 import { NEW_PERSON_CLOSENESS, TIERS } from "@/lib/tiers";
 
-type PersonInput = { name: string; closeness?: number; notes?: string };
+type PersonInput = { name: string; closeness?: number; emoji?: string; notes?: string };
+
 
 /** Trims and checks what the user typed; throws a message fit to show them. */
 function clean(input: PersonInput) {
@@ -12,27 +14,27 @@ function clean(input: PersonInput) {
   if (!name) throw new Error("A person needs a name.");
   const closeness = input.closeness ?? NEW_PERSON_CLOSENESS;
   if (!TIERS.some((t) => t.value === closeness)) throw new Error(`Unknown closeness: ${closeness}`);
-  return { name, closeness, notes: (input.notes ?? "").trim() };
+  const emoji = (input.emoji ?? "").trim();
+  if (emoji && !isOneEmoji(emoji)) throw new Error("Pick a single emoji.");
+  return { name, closeness, emoji, notes: (input.notes ?? "").trim() };
+}
+
+/** The color the next person added will get. */
+export function nextPersonColor(db: Db) {
+  const usage = db.select({ color: people.color, n: count() }).from(people).groupBy(people.color).all();
+  return nextColor(new Map(usage.map((r) => [r.color, r.n])));
 }
 
 export function createPerson(db: Db, input: PersonInput) {
   const values = clean(input);
-  const usage = new Map(
-    db
-      .select({ color: people.color, n: count() })
-      .from(people)
-      .groupBy(people.color)
-      .all()
-      .map((r) => [r.color, r.n]),
-  );
   return db
     .insert(people)
-    .values({ ...values, color: nextColor(usage) })
+    .values({ ...values, color: nextPersonColor(db) })
     .returning()
     .get();
 }
 
-/** Changes name, closeness, and notes. Color stays, so the person stays recognizable. */
+/** Changes name, closeness, emoji, and notes. Color stays, so the person stays recognizable. */
 export function updatePerson(db: Db, id: number, input: PersonInput) {
   const updated = db.update(people).set(clean(input)).where(eq(people.id, id)).returning().get();
   if (!updated) throw new Error("This person no longer exists.");
@@ -62,7 +64,7 @@ const byMoments = [desc(count(entryPeople.entryId)), sql`${people.name} collate 
 /** Everyone, those in the most moments first. */
 export function listPeople(db: Db) {
   return db
-    .select({ id: people.id, name: people.name, closeness: people.closeness, color: people.color })
+    .select({ id: people.id, name: people.name, closeness: people.closeness, color: people.color, emoji: people.emoji })
     .from(people)
     .leftJoin(entryPeople, eq(entryPeople.personId, people.id))
     .groupBy(people.id)
@@ -73,7 +75,7 @@ export function listPeople(db: Db) {
 /** Everyone in a tier with the date of their latest moment, in the same order as the arcs. */
 export function listTier(db: Db, closeness: number) {
   return db
-    .select({ id: people.id, name: people.name, color: people.color, lastMoment: max(entries.date) })
+    .select({ id: people.id, name: people.name, color: people.color, emoji: people.emoji, lastMoment: max(entries.date) })
     .from(people)
     .leftJoin(entryPeople, eq(entryPeople.personId, people.id))
     .leftJoin(entries, eq(entries.id, entryPeople.entryId))

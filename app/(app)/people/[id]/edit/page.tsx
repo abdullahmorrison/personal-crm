@@ -12,7 +12,7 @@ async function Edit({ params }: { params: Promise<{ id: string }> }) {
     <Panel close={{ href: `/people/${person.id}`, label: `Back to ${person.name}` }}>
       <BackLink href={`/people/${person.id}`} label={`Back to ${person.name}`} />
       <h1 className="mt-6 mb-10 pr-10 text-2xl font-medium desk:mt-0 desk:mb-9 desk:text-[1.375rem]">Edit {person.name}</h1>
-      <PersonForm action={editPerson.bind(null, person.id)} submitLabel="Save" defaults={person} />
+      <PersonForm action={editPerson.bind(null, person.id)} submitLabel="Save" color={person.color} defaults={person} />
       <div className="mt-14 border-t border-line pt-6">
         <ConfirmDelete
           label={`Delete ${person.name}`}
