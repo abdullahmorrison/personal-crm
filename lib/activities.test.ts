@@ -41,20 +41,26 @@ describe("updateActivity", () => {
 });
 
 describe("listActivities", () => {
-  it("puts those in the most moments first, then the most recent, then A to Z, and counts them", () => {
+  it("puts those in the most moments first, then those with the most people, then A to Z, and counts them", () => {
     const db = openDb(":memory:");
-    const [climbing, games, pickleball] = ["Climbing", "Board games", "Pickleball", "bowling", "Chess"].map((name) => createActivity(db, { name, icon: "dices" }));
-    const log = (date: string, time: string, ...activityIds: number[]) => createMoment(db, { body: "Hi", date, time, personIds: [], activityIds });
-    log("2026-10-01", "09:00", pickleball.id, games.id);
-    log("2026-10-02", "09:00", pickleball.id);
-    log("2026-10-05", "", climbing.id);
-    log("2026-10-05", "08:00", games.id);
+    const [sam, priya] = ["Sam", "Priya"].map((name) => createPerson(db, { name }));
+    const add = (name: string, personIds: number[] = []) => createActivity(db, { name, icon: "dices", personIds });
+    const pickleball = add("Pickleball", [sam.id]);
+    const games = add("Board games", [sam.id, priya.id]);
+    const climbing = add("Climbing");
+    add("bowling");
+    add("Chess", [priya.id]);
+    const log = (...activityIds: number[]) => createMoment(db, { body: "Hi", date: "2026-10-01", personIds: [], activityIds });
+    log(pickleball.id, games.id);
+    log(pickleball.id);
+    log(games.id);
+    log(climbing.id);
     expect(listActivities(db).map((a) => [a.name, a.moments])).toEqual([
       ["Board games", 2],
       ["Pickleball", 2],
       ["Climbing", 1],
-      ["bowling", 0],
       ["Chess", 0],
+      ["bowling", 0],
     ]);
   });
 
