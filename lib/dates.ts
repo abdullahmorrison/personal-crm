@@ -42,6 +42,17 @@ export function isTime(value: string) {
 /** "7:15 PM" */
 export const timeLabel = (time: string) => fmt({ hour: "numeric", minute: "2-digit" }).format(new Date(`1970-01-01T${time}:00Z`));
 
+/** "19:15" as the parts of a 12-hour clock: { hour: 7, minute: 15, pm: true } */
+export function toClock(time: string) {
+  const [h, minute] = time.split(":").map(Number);
+  return { hour: h % 12 || 12, minute, pm: h >= 12 };
+}
+
+/** The parts of a 12-hour clock back to HH:MM. */
+export function fromClock({ hour, minute, pm }: { hour: number; minute: number; pm: boolean }) {
+  return `${String((hour % 12) + (pm ? 12 : 0)).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+}
+
 /** The time now on the viewer's own clock, as HH:MM. */
 export function localNow() {
   const now = new Date();

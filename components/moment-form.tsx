@@ -5,10 +5,11 @@ import Link from "next/link";
 import { useActionState, useCallback, useRef, useState, useSyncExternalStore } from "react";
 import type { MomentFormState } from "@/app/(app)/journal/actions";
 import { DatePicker } from "@/components/date-picker";
+import { TimePicker } from "@/components/time-picker";
 import { MomentEditor } from "@/components/moment-editor";
 import { WithActivities } from "@/components/with-activities";
 import { WithPeople } from "@/components/with-people";
-import { localNow, localToday, longDate, momentTime } from "@/lib/dates";
+import { localNow, localToday, longDate, momentTime, timeLabel } from "@/lib/dates";
 import { linkedAfterHandEdit, mentionedActivityIds, mentionedIds, syncWith } from "@/lib/mentions";
 
 type Person = { id: number; name: string; color: number };
@@ -38,7 +39,9 @@ export function MomentForm({ action, people, activities, defaults, closeHref }: 
   const [picked, setPicked] = useState<string | null>(defaults?.date ?? null);
   const date = picked ?? today;
   const now = useSyncExternalStore(noSubscribe, localNow, () => "");
-  const time = momentTime(date, today, now, defaults);
+  // A time picked by hand holds for the day it was picked on; another day starts over.
+  const [pickedTime, setPickedTime] = useState<{ date: string; time: string } | null>(null);
+  const time = momentTime(date, today, now, pickedTime ?? defaults);
   // Who was there, and which of them a mention put there (so removing the mention removes them).
   const [withState, setWith] = useState({ chosen: defaults?.personIds ?? [], linked: defaults?.viaMention ?? [] });
   const { chosen } = withState;
@@ -56,7 +59,10 @@ export function MomentForm({ action, people, activities, defaults, closeHref }: 
         </button>
       </div>
 
-      <DateHeading date={date} today={today} onChange={setPicked} />
+      <div className="relative mt-6 flex flex-wrap items-baseline gap-x-2.5">
+        <DateHeading date={date} today={today} onChange={setPicked} />
+        {date && <TimeHeading time={time} now={now} onChange={(t) => setPickedTime({ date, time: t })} />}
+      </div>
       <input type="hidden" name="date" value={date} />
       <input type="hidden" name="time" value={time} />
 
@@ -125,7 +131,7 @@ function DateHeading({ date, today, onChange }: { date: string; today: string; o
     if (refocus) button.current?.focus();
   }, []);
   return (
-    <div className="relative mt-6 self-start">
+    <div className="relative">
       <button
         ref={button}
         type="button"
@@ -148,5 +154,31 @@ function DateHeading({ date, today, onChange }: { date: string; today: string; o
         />
       )}
     </div>
+  );
+}
+
+/** The time beside the date, or Add time when it has none; tapping it opens the wheels. */
+function TimeHeading({ time, now, onChange }: { time: string; now: string; onChange: (time: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const button = useRef<HTMLButtonElement>(null);
+  const close = useCallback((refocus: boolean) => {
+    setOpen(false);
+    if (refocus) button.current?.focus();
+  }, []);
+  return (
+    <>
+      <button
+        ref={button}
+        type="button"
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        className={`rounded-lg font-serif text-[1.625rem] italic underline-offset-4 decoration-line hover:underline ${
+          open ? "text-ink underline" : time ? "text-muted" : "text-accent"
+        }`}
+      >
+        {time ? timeLabel(time) : "Add time"}
+      </button>
+      {open && <TimePicker time={time} now={now} opener={button} onPick={onChange} onClose={close} />}
+    </>
   );
 }
