@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { dayLabel, isDate, localToday, longDate, monthGrid, monthLabel, shiftMonth, shortDate, shortMonth } from "./dates";
+import { dayHeading, dayLabel, isDate, isTime, localNow, localToday, longDate, monthGrid, monthLabel, shiftMonth, shortDate, shortMonth, timeLabel } from "./dates";
 
 describe("dates", () => {
   it("formats calendar days without shifting them", () => {
@@ -14,6 +14,35 @@ describe("dates", () => {
     expect(isDate("2026-02-30")).toBe(false);
     expect(isDate("2026-2-3")).toBe(false);
     expect(isDate("")).toBe(false);
+  });
+});
+
+describe("times", () => {
+  afterEach(() => vi.useRealTimers());
+
+  it("accepts only real HH:MM times", () => {
+    expect(isTime("00:00")).toBe(true);
+    expect(isTime("23:59")).toBe(true);
+    expect(isTime("24:00")).toBe(false);
+    expect(isTime("7:15")).toBe(false);
+  });
+
+  it("formats them on a 12-hour clock", () => {
+    expect(timeLabel("19:15")).toBe("7:15 PM");
+    expect(timeLabel("00:05")).toBe("12:05 AM");
+  });
+
+  it("reads the viewer's clock", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 9, 22, 9, 5));
+    expect(localNow()).toBe("09:05");
+  });
+
+  it("heads a day with its weekday, and the year only outside this one", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-11-02T12:00:00Z"));
+    expect(dayHeading("2026-10-22")).toBe("Thursday, Oct 22");
+    expect(dayHeading("2025-10-22")).toBe("Wednesday, Oct 22, 2025");
   });
 });
 

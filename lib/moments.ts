@@ -1,13 +1,14 @@
 import { desc, eq, inArray } from "drizzle-orm";
 import { activities, entries, entryActivities, entryPeople, people } from "@/db/schema";
 import type { Db } from "@/lib/db";
-import { isDate, monthLabel } from "@/lib/dates";
+import { dayHeading, isDate, isTime, monthLabel } from "@/lib/dates";
 import { mentionedActivityIds, mentionedIds } from "@/lib/mentions";
 
 // viaMention: those in personIds who are there only because the text mentions them; the same for activities.
 export type MomentInput = {
   body: string;
   date: string;
+  time?: string; // HH:MM, or empty when unknown
   personIds: number[];
   viaMention?: number[];
   activityIds?: number[];
@@ -20,6 +21,8 @@ function clean(db: Db, input: MomentInput) {
   const body = input.body.trim();
   if (!body) throw new Error("Write something about the moment.");
   if (!isDate(input.date)) throw new Error("Pick a date for the moment.");
+  const time = input.time || null;
+  if (time && !isTime(time)) throw new Error("Pick a time for the moment, or leave it empty.");
   const personIds = [...new Set(input.personIds)];
   if (personIds.length) {
     const found = db.select({ id: people.id }).from(people).where(inArray(people.id, personIds)).all();
@@ -32,7 +35,7 @@ function clean(db: Db, input: MomentInput) {
     if (found.length !== activityIds.length) throw new Error("An activity you picked no longer exists.");
   }
   const activityViaMention = (input.activityViaMention ?? []).filter((id) => activityIds.includes(id));
-  return { values: { body, date: input.date }, links: { personIds, viaMention, activityIds, activityViaMention } };
+  return { values: { body, date: input.date, time }, links: { personIds, viaMention, activityIds, activityViaMention } };
 }
 
 type Links = ReturnType<typeof clean>["links"];
@@ -74,7 +77,7 @@ export function deleteMoment(db: Db, id: number) {
 }
 
 /**
- * Every moment, newest first, with the people and activities in it, and everyone and everything its
+ * Every moment, newest first (on a day, those without a time come after the timed ones), with the people and activities in it, and everyone and everything its
  * text mentions (which may not be in it any more). Narrow it to one moment, or to one person's moments.
  */
 export function listMoments(db: Db, where?: { id?: number; personId?: number }) {
@@ -84,7 +87,7 @@ export function listMoments(db: Db, where?: { id?: number; personId?: number }) 
     .select()
     .from(entries)
     .where(where?.id ? eq(entries.id, where.id) : where?.personId ? withPerson(where.personId) : undefined)
-    .orderBy(desc(entries.date), desc(entries.id))
+    .orderBy(desc(entries.date), desc(entries.time), desc(entries.id)) // SQLite sorts empty times last when descending
     .all();
   const links = rows.length
     ? db
@@ -129,6 +132,7 @@ export function listMoments(db: Db, where?: { id?: number; personId?: number }) 
       id: r.id,
       body: r.body,
       date: r.date,
+      time: r.time ?? "",
       people: links.filter((l) => l.entryId === r.id).map(({ id, name, color, viaMention }) => ({ id, name, color, viaMention })),
       activities: doing.filter((a) => a.entryId === r.id).map(({ id, name, icon, viaMention }) => ({ id, name, icon, viaMention })),
       mentioned: mentionable.filter((p) => ids.includes(p.id)),
@@ -146,11 +150,22 @@ export function formDefaults(moment: Moment) {
   return {
     body: moment.body,
     date: moment.date,
+    time: moment.time,
     personIds: moment.people.map((p) => p.id),
     viaMention: moment.people.filter((p) => p.viaMention).map((p) => p.id),
     activityIds: moment.activities.map((a) => a.id),
     activityViaMention: moment.activities.filter((a) => a.viaMention).map((a) => a.id),
   };
+}
+
+/** Groups a newest-first list into days, keeping order: [{ label: "Thursday, Oct 22", moments }]. */
+export function groupByDay<T extends { date: string }>(moments: T[]) {
+  const groups: { key: string; label: string; moments: T[] }[] = [];
+  for (const m of moments) {
+    if (groups.at(-1)?.key !== m.date) groups.push({ key: m.date, label: dayHeading(m.date), moments: [] });
+    groups.at(-1)!.moments.push(m);
+  }
+  return groups;
 }
 
 /** Groups a newest-first list into months, keeping order: [{ label: "October 2026", moments }]. */

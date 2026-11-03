@@ -19,6 +19,7 @@ export const entries = sqliteTable("entries", {
   userId: integer("user_id"),
   body: text("body").notNull(),
   date: text("date").notNull(), // YYYY-MM-DD
+  time: text("time"), // HH:MM on the writer's clock; empty when unknown, as for moments logged on a later day
   createdAt: createdAt(),
 });
 

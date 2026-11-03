@@ -17,6 +17,10 @@ export const shortDate = (date: string) => fmt({ weekday: "short", month: "short
 export const dayLabel = (date: string) =>
   fmt({ month: "short", day: "numeric", year: day(date).getUTCFullYear() === new Date().getUTCFullYear() ? undefined : "numeric" }).format(day(date));
 
+/** "Thursday, Oct 22", or "Thursday, Oct 22, 2024" outside the current year */
+export const dayHeading = (date: string) =>
+  fmt({ weekday: "long", month: "short", day: "numeric", year: day(date).getUTCFullYear() === new Date().getUTCFullYear() ? undefined : "numeric" }).format(day(date));
+
 /** "Oct" */
 export const shortMonth = (date: string) => fmt({ month: "short" }).format(day(date));
 
@@ -27,6 +31,20 @@ export const monthLabel = (date: string) => fmt({ month: "long", year: "numeric"
 export function localToday() {
   const now = new Date();
   return new Date(now.getTime() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
+}
+
+// Times are plain HH:MM on the writer's clock, beside the date they belong to.
+export function isTime(value: string) {
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
+}
+
+/** "7:15 PM" */
+export const timeLabel = (time: string) => fmt({ hour: "numeric", minute: "2-digit" }).format(new Date(`1970-01-01T${time}:00Z`));
+
+/** The time now on the viewer's own clock, as HH:MM. */
+export function localNow() {
+  const now = new Date();
+  return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
 }
 
 /** The calendar for the month holding `date`: blank cells before the 1st (weeks start Sunday), then every day. */
