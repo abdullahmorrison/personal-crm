@@ -4,13 +4,13 @@ import { Suspense } from "react";
 import { MomentItem } from "@/components/moment-item";
 import { SectionLabel } from "@/components/section-label";
 import { getDb } from "@/lib/db";
-import { groupByMonth, listMoments } from "@/lib/moments";
+import { groupByDay, groupByMonth, listMoments } from "@/lib/moments";
 
 async function Feed() {
   await connection(); // read the database per request, not at build time
-  const months = groupByMonth(listMoments(getDb()));
+  const moments = listMoments(getDb());
 
-  if (months.length === 0) {
+  if (moments.length === 0) {
     return (
       <div className="mt-16 text-center">
         <p className="font-serif text-[1.375rem]">No moments yet.</p>
@@ -22,7 +22,7 @@ async function Feed() {
     );
   }
 
-  const latest = months[0];
+  const latest = groupByMonth(moments)[0];
   const peopleCount = new Set(latest.moments.flatMap((m) => m.people.map((p) => p.id))).size;
   return (
     <>
@@ -30,11 +30,11 @@ async function Feed() {
         {latest.label.split(" ")[0]} · {latest.moments.length} {latest.moments.length === 1 ? "moment" : "moments"}
         {peopleCount > 0 && ` with ${peopleCount} ${peopleCount === 1 ? "person" : "people"}`}
       </p>
-      {months.map((month) => (
-        <section key={month.key} className="mt-9 flex flex-col gap-3">
-          <SectionLabel>{month.label}</SectionLabel>
+      {groupByDay(moments).map((day) => (
+        <section key={day.key} className="mt-9 flex flex-col gap-3">
+          <SectionLabel>{day.label}</SectionLabel>
           <div className="flex flex-col gap-3">
-            {month.moments.map((m) => (
+            {day.moments.map((m) => (
               <MomentItem key={m.id} moment={m} />
             ))}
           </div>

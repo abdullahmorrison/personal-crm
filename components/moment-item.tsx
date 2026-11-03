@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Faces } from "@/components/faces";
 import { MomentBody } from "@/components/moment-body";
-import { shortDate } from "@/lib/dates";
+import { shortDate, timeLabel } from "@/lib/dates";
 import type { Moment } from "@/lib/moments";
 import { firstName } from "@/lib/names";
 
@@ -9,6 +9,7 @@ const ITEM = "-mx-3 flex flex-col gap-2 rounded-xl px-3 py-2.5 transition-colors
 
 /**
  * One moment in a list: who and when, then what happened. Tapping opens it for editing.
+ * The journal groups moments by day, so there it shows only the time.
  * On a person's own pages (`about` is their id), it leaves them out and names only who else was there,
  * and `href` opens it in their panel instead of the journal.
  */
@@ -18,7 +19,10 @@ export function MomentItem({ moment, about, href = `/journal/${moment.id}/edit` 
     return (
       <Link href={href} className={ITEM}>
         <span className="flex gap-2 text-xs text-muted">
-          <span>{shortDate(moment.date)}</span>
+          <span>
+            {shortDate(moment.date)}
+            {moment.time && ` · ${timeLabel(moment.time)}`}
+          </span>
           {others.length > 0 && <span>with {others.map((p) => firstName(p.name)).join(", ")}</span>}
         </span>
         <span className="font-serif text-[1.0625rem] leading-[1.8125rem] whitespace-pre-line"><MomentBody body={moment.body} people={moment.mentioned} activities={moment.mentionedActivities} /></span>
@@ -29,7 +33,7 @@ export function MomentItem({ moment, about, href = `/journal/${moment.id}/edit` 
     <Link href={href} className={ITEM}>
       <span className="flex items-center gap-2 text-xs">
         <Faces people={moment.people} />
-        <span className="text-muted">{shortDate(moment.date)}</span>
+        {moment.time && <span className="text-muted">{timeLabel(moment.time)}</span>}
         <span className={moment.people.length ? "font-medium" : "text-muted"}>
           {moment.people.length ? moment.people.map((p) => firstName(p.name)).join(", ") : "Just me"}
         </span>

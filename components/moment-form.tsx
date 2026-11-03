@@ -8,7 +8,7 @@ import { DatePicker } from "@/components/date-picker";
 import { MomentEditor } from "@/components/moment-editor";
 import { WithActivities } from "@/components/with-activities";
 import { WithPeople } from "@/components/with-people";
-import { localToday, longDate } from "@/lib/dates";
+import { localNow, localToday, longDate, momentTime } from "@/lib/dates";
 import { linkedAfterHandEdit, mentionedActivityIds, mentionedIds, syncWith } from "@/lib/mentions";
 
 type Person = { id: number; name: string; color: number };
@@ -18,7 +18,7 @@ type Props = {
   action: (prev: MomentFormState, form: FormData) => Promise<MomentFormState>;
   people: Person[];
   activities: Activity[];
-  defaults?: { body: string; date: string; personIds: number[]; viaMention: number[]; activityIds: number[]; activityViaMention: number[] };
+  defaults?: { body: string; date: string; time: string; personIds: number[]; viaMention: number[]; activityIds: number[]; activityViaMention: number[] };
   closeHref: string;
 };
 
@@ -37,6 +37,8 @@ export function MomentForm({ action, people, activities, defaults, closeHref }: 
   const today = useSyncExternalStore(noSubscribe, localToday, () => "");
   const [picked, setPicked] = useState<string | null>(defaults?.date ?? null);
   const date = picked ?? today;
+  const now = useSyncExternalStore(noSubscribe, localNow, () => "");
+  const time = momentTime(date, today, now, defaults);
   // Who was there, and which of them a mention put there (so removing the mention removes them).
   const [withState, setWith] = useState({ chosen: defaults?.personIds ?? [], linked: defaults?.viaMention ?? [] });
   const { chosen } = withState;
@@ -56,6 +58,7 @@ export function MomentForm({ action, people, activities, defaults, closeHref }: 
 
       <DateHeading date={date} today={today} onChange={setPicked} />
       <input type="hidden" name="date" value={date} />
+      <input type="hidden" name="time" value={time} />
 
       <div className="mt-2">
         <WithPeople
