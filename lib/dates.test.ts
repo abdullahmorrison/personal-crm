@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { dayHeading, dayLabel, isDate, isTime, localNow, localToday, longDate, monthGrid, monthLabel, shiftMonth, shortDate, shortMonth, timeLabel } from "./dates";
+import { dayHeading, dayLabel, isDate, isTime, localNow, localToday, momentTime, longDate, monthGrid, monthLabel, shiftMonth, shortDate, shortMonth, timeLabel } from "./dates";
 
 describe("dates", () => {
   it("formats calendar days without shifting them", () => {
@@ -43,6 +43,21 @@ describe("times", () => {
     vi.setSystemTime(new Date("2026-11-02T12:00:00Z"));
     expect(dayHeading("2026-10-22")).toBe("Thursday, Oct 22");
     expect(dayHeading("2025-10-22")).toBe("Wednesday, Oct 22, 2025");
+  });
+});
+
+describe("momentTime", () => {
+  const today = "2026-10-22";
+  it("is now for a new moment today, and empty for an earlier day", () => {
+    expect(momentTime(today, today, "21:40")).toBe("21:40");
+    expect(momentTime("2026-10-20", today, "21:40")).toBe("");
+  });
+
+  it("keeps an edit's saved time, even an empty one, unless the day changes", () => {
+    expect(momentTime(today, today, "21:40", { date: today, time: "12:30" })).toBe("12:30");
+    expect(momentTime(today, today, "21:40", { date: today, time: "" })).toBe("");
+    expect(momentTime("2026-10-21", today, "21:40", { date: "2026-10-20", time: "19:15" })).toBe("");
+    expect(momentTime(today, today, "21:40", { date: "2026-10-20", time: "19:15" })).toBe("21:40");
   });
 });
 

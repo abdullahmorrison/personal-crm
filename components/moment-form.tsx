@@ -8,7 +8,7 @@ import { DatePicker } from "@/components/date-picker";
 import { MomentEditor } from "@/components/moment-editor";
 import { WithActivities } from "@/components/with-activities";
 import { WithPeople } from "@/components/with-people";
-import { localNow, localToday, longDate } from "@/lib/dates";
+import { localNow, localToday, longDate, momentTime } from "@/lib/dates";
 import { linkedAfterHandEdit, mentionedActivityIds, mentionedIds, syncWith } from "@/lib/mentions";
 
 type Person = { id: number; name: string; color: number };
@@ -37,10 +37,8 @@ export function MomentForm({ action, people, activities, defaults, closeHref }: 
   const today = useSyncExternalStore(noSubscribe, localToday, () => "");
   const [picked, setPicked] = useState<string | null>(defaults?.date ?? null);
   const date = picked ?? today;
-  // A moment logged on its day gets the time now; one logged later has no time, rather than a wrong one.
-  // An edit keeps its time unless the day changes.
   const now = useSyncExternalStore(noSubscribe, localNow, () => "");
-  const time = date === defaults?.date ? defaults.time : date === today ? now : "";
+  const time = momentTime(date, today, now, defaults);
   // Who was there, and which of them a mention put there (so removing the mention removes them).
   const [withState, setWith] = useState({ chosen: defaults?.personIds ?? [], linked: defaults?.viaMention ?? [] });
   const { chosen } = withState;

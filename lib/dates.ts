@@ -13,13 +13,14 @@ export const longDate = (date: string) => fmt({ weekday: "long", month: "long", 
 /** "Thu, Oct 22" */
 export const shortDate = (date: string) => fmt({ weekday: "short", month: "short", day: "numeric" }).format(day(date));
 
+// Shows the year only for dates outside the current one.
+const yearIfOther = (date: string) => (day(date).getUTCFullYear() === new Date().getUTCFullYear() ? undefined : "numeric");
+
 /** "Oct 22", or "Oct 22, 2024" outside the current year */
-export const dayLabel = (date: string) =>
-  fmt({ month: "short", day: "numeric", year: day(date).getUTCFullYear() === new Date().getUTCFullYear() ? undefined : "numeric" }).format(day(date));
+export const dayLabel = (date: string) => fmt({ month: "short", day: "numeric", year: yearIfOther(date) }).format(day(date));
 
 /** "Thursday, Oct 22", or "Thursday, Oct 22, 2024" outside the current year */
-export const dayHeading = (date: string) =>
-  fmt({ weekday: "long", month: "short", day: "numeric", year: day(date).getUTCFullYear() === new Date().getUTCFullYear() ? undefined : "numeric" }).format(day(date));
+export const dayHeading = (date: string) => fmt({ weekday: "long", month: "short", day: "numeric", year: yearIfOther(date) }).format(day(date));
 
 /** "Oct" */
 export const shortMonth = (date: string) => fmt({ month: "short" }).format(day(date));
@@ -45,6 +46,15 @@ export const timeLabel = (time: string) => fmt({ hour: "numeric", minute: "2-dig
 export function localNow() {
   const now = new Date();
   return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+}
+
+/**
+ * The time to save with a moment on `date`. An edit keeps its saved time unless the day changes;
+ * otherwise a moment logged on its day gets the time now, and one logged later none, rather than a wrong one.
+ */
+export function momentTime(date: string, today: string, now: string, saved?: { date: string; time: string }) {
+  if (date === saved?.date) return saved.time;
+  return date === today ? now : "";
 }
 
 /** The calendar for the month holding `date`: blank cells before the 1st (weeks start Sunday), then every day. */

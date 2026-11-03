@@ -158,23 +158,18 @@ export function formDefaults(moment: Moment) {
   };
 }
 
-/** Groups a newest-first list into days, keeping order: [{ label: "Thursday, Oct 22", moments }]. */
-export function groupByDay<T extends { date: string }>(moments: T[]) {
+// Groups a newest-first list by `key`, keeping order: [{ key, label, moments }].
+function groupBy<T extends { date: string }>(moments: T[], key: (date: string) => string, label: (date: string) => string) {
   const groups: { key: string; label: string; moments: T[] }[] = [];
   for (const m of moments) {
-    if (groups.at(-1)?.key !== m.date) groups.push({ key: m.date, label: dayHeading(m.date), moments: [] });
+    if (groups.at(-1)?.key !== key(m.date)) groups.push({ key: key(m.date), label: label(m.date), moments: [] });
     groups.at(-1)!.moments.push(m);
   }
   return groups;
 }
 
-/** Groups a newest-first list into months, keeping order: [{ label: "October 2026", moments }]. */
-export function groupByMonth<T extends { date: string }>(moments: T[]) {
-  const groups: { key: string; label: string; moments: T[] }[] = [];
-  for (const m of moments) {
-    const key = m.date.slice(0, 7);
-    if (groups.at(-1)?.key !== key) groups.push({ key, label: monthLabel(m.date), moments: [] });
-    groups.at(-1)!.moments.push(m);
-  }
-  return groups;
-}
+/** Groups a newest-first list into days: [{ label: "Thursday, Oct 22", moments }]. */
+export const groupByDay = <T extends { date: string }>(moments: T[]) => groupBy(moments, (d) => d, dayHeading);
+
+/** Groups a newest-first list into months: [{ label: "October 2026", moments }]. */
+export const groupByMonth = <T extends { date: string }>(moments: T[]) => groupBy(moments, (d) => d.slice(0, 7), monthLabel);
