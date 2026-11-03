@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { dayHeading, dayLabel, isDate, isTime, localNow, localToday, momentTime, longDate, monthGrid, monthLabel, shiftMonth, shortDate, shortMonth, timeLabel } from "./dates";
+import { dayHeading, fromClock, dayLabel, isDate, isTime, localNow, localToday, momentTime, longDate, monthGrid, monthLabel, shiftMonth, shortDate, shortMonth, timeLabel, toClock } from "./dates";
 
 describe("dates", () => {
   it("formats calendar days without shifting them", () => {
@@ -30,6 +30,13 @@ describe("times", () => {
   it("formats them on a 12-hour clock", () => {
     expect(timeLabel("19:15")).toBe("7:15 PM");
     expect(timeLabel("00:05")).toBe("12:05 AM");
+  });
+
+  it("converts to a 12-hour clock and back", () => {
+    expect(toClock("19:15")).toEqual({ hour: 7, minute: 15, pm: true });
+    expect(toClock("00:05")).toEqual({ hour: 12, minute: 5, pm: false });
+    expect(toClock("12:00")).toEqual({ hour: 12, minute: 0, pm: true });
+    for (const t of ["00:00", "00:59", "11:30", "12:00", "12:45", "23:59"]) expect(fromClock(toClock(t))).toBe(t);
   });
 
   it("reads the viewer's clock", () => {
