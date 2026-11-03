@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Suspense, useEffect, useSyncExternalStore } from "react";
+import { type Arrival, arrive, close as closePlan, level, type Plan } from "@/lib/nav-stack";
 
 // The browser's Back should only undo pages that sit on top of another: a profile over People on a
 // phone, a moment over a profile, a form over what it edits. Everything else (switching tabs, opening
@@ -10,26 +11,20 @@ import { Suspense, useEffect, useSyncExternalStore } from "react";
 // leaves the app.
 //
 // The browser doesn't say which entries are below the current one, so this keeps its own copy of the
-// app's part of the history: the paths Back would return to, bottom first. After a reload it starts
-// over from the current page, which only means a close replaces instead of going back.
+// app's part of the history (lib/nav-stack.ts has the rules). After a reload it starts over from the
+// current page, which only means a close replaces instead of going back.
 
 type Router = ReturnType<typeof useRouter>;
 
 let stack: string[] = [];
-// How the next path change happened. Link and router.push leave it unset, which means a push.
-let incoming: "replace" | "pop" | null = null;
+// How the next path change happens. Link and router.push leave it unset, which means a push.
+let incoming: Arrival = "push";
 // What to do once a jump back through history lands: go on to another page, or refetch the one landed on.
 let afterPop: { replace?: string; refresh?: boolean } | null = null;
 
 function track(path: string, router: Router) {
-  if (stack.length === 0) stack = [path];
-  else if (incoming === "replace") stack[stack.length - 1] = path;
-  else if (incoming === "pop") {
-    // Back lands on a page already in the stack; anything else (Forward) starts over from here.
-    const i = stack.lastIndexOf(path);
-    stack = i === -1 ? [path] : stack.slice(0, i + 1);
-  } else if (stack.at(-1) !== path) stack.push(path);
-  incoming = null;
+  stack = arrive(stack, path, incoming);
+  incoming = "push";
 
   const next = afterPop;
   afterPop = null;
@@ -60,20 +55,19 @@ function Tracker() {
   return null;
 }
 
-function replace(router: Router, href: string) {
-  incoming = "replace";
-  router.replace(href);
-}
-
-function goBack(steps: number, then: NonNullable<typeof afterPop>) {
-  afterPop = then;
-  window.history.go(-steps);
+function follow(router: Router, { back, replace }: Plan, refresh = false) {
+  if (back > 0) {
+    afterPop = { replace, refresh };
+    window.history.go(-back);
+  } else if (replace) {
+    incoming = "replace";
+    router.replace(replace);
+  }
 }
 
 /** Goes to a page as if it were the bottom of the app's history, like switching tabs. */
 export function goLevel(router: Router, href: string) {
-  if (stack.length > 1) goBack(stack.length - 1, { replace: href });
-  else replace(router, href);
+  follow(router, level(stack, href));
 }
 
 /**
@@ -81,10 +75,7 @@ export function goLevel(router: Router, href: string) {
  * here; otherwise as if `href` were the bottom of the app's history. `refresh` refetches the page landed on.
  */
 export function close(router: Router, href: string, { refresh = false } = {}) {
-  const i = stack.lastIndexOf(href, stack.length - 2);
-  if (i !== -1) goBack(stack.length - 1 - i, { refresh });
-  else if (stack.length > 1) goBack(stack.length - 1, { replace: href });
-  else replace(router, href);
+  follow(router, closePlan(stack, href), refresh);
 }
 
 /** Once a form's action reports where it's done, closes the form to there, refetching what's there. */
