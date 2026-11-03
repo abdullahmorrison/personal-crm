@@ -7,6 +7,7 @@ import { ActivityIcon } from "@/components/activity-icon";
 import { SectionLabel } from "@/components/section-label";
 import { WithPeople } from "@/components/with-people";
 import { DEFAULT_ACTIVITY_ICON, searchIcons } from "@/lib/activity-icons";
+import { useCloseOnDone } from "@/components/nav-stack";
 
 type Props = {
   action: (prev: ActivityFormState, form: FormData) => Promise<ActivityFormState>;
@@ -17,6 +18,7 @@ type Props = {
 
 export function ActivityForm({ action, people, submitLabel, defaults }: Props) {
   const [state, formAction, pending] = useActionState(action, {});
+  useCloseOnDone(state);
   const [icon, setIcon] = useState(defaults?.icon ?? DEFAULT_ACTIVITY_ICON);
   const [picking, setPicking] = useState(false);
   const [chosen, setChosen] = useState(defaults?.personIds ?? []);
