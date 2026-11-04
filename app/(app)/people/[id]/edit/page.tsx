@@ -12,7 +12,7 @@ async function Edit({ params }: { params: Promise<{ id: string }> }) {
     <Panel close={{ href: `/people/${person.id}`, label: `Back to ${person.name}` }}>
       <BackLink href={`/people/${person.id}`} label={`Back to ${person.name}`} />
       <h1 className="mt-6 mb-10 pr-10 text-2xl font-medium desk:mt-0 desk:mb-9 desk:text-[1.375rem]">Edit {person.name}</h1>
-      {/* Keyed by what's saved: a reopened form can render first from a cached copy, and it only reads its defaults once. */}
+      {/* Keyed by what's saved: Next keeps a left page alive with its state, so a reopened form would hold the values from before. */}
       <PersonForm key={JSON.stringify(person)} action={editPerson.bind(null, person.id)} submitLabel="Save" defaults={person} />
       <div className="mt-14 border-t border-line pt-6">
         <ConfirmDelete

@@ -15,7 +15,7 @@ export async function MomentPanel({ momentId, back }: { momentId: string; back: 
   const defaults = formDefaults(moment);
   return (
     <Panel>
-      {/* Keyed by what's saved: a reopened form can render first from a cached copy, and it only reads its defaults once. */}
+      {/* Keyed by what's saved: Next keeps a left page alive with its state, so a reopened form would hold the values from before. */}
       <MomentForm
         key={JSON.stringify(defaults)}
         action={editMoment.bind(null, moment.id, back)}
